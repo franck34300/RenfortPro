@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RenfortPro met les entreprises en relation avec des professionnels indépendants pour leurs besoins ponctuels, réguliers ou prolongés.">
+  <title>RenfortPro — Le bon renfort. Au bon moment.</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#accueil" aria-label="RenfortPro, accueil"><span class="brand-mark">↔</span><span>Renfort<span class="brand-green">Pro</span><small>Le bon renfort. Au bon moment.</small></span></a>
+    <nav class="main-nav" aria-label="Navigation principale">
+      <a href="#accueil">Accueil</a><a href="#entreprises">Entreprises</a><a href="#independants">Indépendants</a><a href="#tarifs">Tarifs</a><a href="#partenaires">Partenaires</a>
+    </nav>
+    <a class="button button-dark button-small" href="#connexion">Se connecter</a>
+    <button class="menu-toggle" aria-label="Ouvrir le menu">☰</button>
+  </header>
+  <main>
+    <section class="hero" id="accueil">
+      <div class="hero-copy">
+        <p class="eyebrow">Une compétence, au bon moment</p>
+        <h1>Le bon renfort.<br><em>Au bon moment.</em></h1>
+        <p class="lead">Une plateforme qui met les entreprises en relation avec des professionnels indépendants pour répondre à leurs besoins ponctuels, réguliers ou prolongés.</p>
+        <div class="hero-actions"><a class="button button-dark" href="#entreprises">⌕ &nbsp; Je recherche un professionnel <span>→</span></a><a class="button button-outline" href="#independants">Je propose mes compétences <span>→</span></a></div>
+        <div class="trust-row"><span>✓ Simple et rapide</span><span>✓ Tous métiers</span><span>✓ Sans commission</span></div>
+      </div>
+      <div class="hero-visual"><div class="visual-placeholder"><span class="visual-icon">🤝</span><p>Entreprise &amp; indépendants</p><small>Le renfort qui vous correspond</small></div></div>
+    </section>
+    <section class="audience-grid">
+      <article class="audience-card company-card" id="entreprises"><div class="audience-icon">▦</div><p class="eyebrow">Vous avez un besoin ?</p><h2>Entreprises</h2><p>Publiez vos missions, trouvez le professionnel idéal et gagnez en sérénité.</p><ul><li>Accès à des profils et compétences</li><li>Publication de missions en quelques clics</li><li>10 € / mois, sans engagement</li></ul><a class="button button-dark" href="#recherche-profils">Découvrir l'espace entreprise →</a></article>
+      <article class="audience-card independent-card" id="independants"><div class="audience-icon">♙</div><p class="eyebrow">Vos compétences méritent des opportunités</p><h2>Indépendants</h2><p>Présentez votre savoir-faire et recevez des missions qui vous correspondent.</p><ul><li>Inscription gratuite</li><li>Profil professionnel</li><li>Missions selon vos compétences</li></ul><a class="button button-outline" href="#missions">Découvrir l'espace indépendant →</a></article>
+    </section>
+    <section class="search-panel" id="recherche-profils"><div class="section-heading"><p class="eyebrow">Espace entreprise</p><h2>Trouvez le professionnel<br>qu'il vous faut.</h2><p>Affinez votre recherche selon vos besoins.</p></div>
+      <form class="filters" id="profile-search"><input id="skill-filter" placeholder="Métier, compétence…" aria-label="Métier ou compétence"><input id="location-filter" placeholder="Ville ou code postal" aria-label="Localisation"><select id="availability-filter" aria-label="Disponibilité"><option value="">Toutes les disponibilités</option><option>Disponible rapidement</option><option>Cette semaine</option><option>À convenir</option></select><button class="button button-dark" type="submit">Rechercher</button></form>
+      <div class="results-label"><strong>Quelques profils (exemples)</strong><span id="profile-count">3 profils</span></div><div class="profile-grid" id="profile-results">
+        <article class="profile-card" data-skill="secrétariat administratif accueil gestion" data-location="agde beziers"><div class="avatar avatar-1">SM</div><h3>Sophie Martin</h3><p>Assistante administrative</p><span class="location">⌖ Agde</span><div class="tags"><span>Accueil</span><span>Administratif</span></div><a href="#connexion" class="button button-outline button-card">Voir le profil →</a></article>
+        <article class="profile-card" data-skill="développement web informatique site internet" data-location="beziers"><div class="avatar avatar-2">JM</div><h3>Julien Moreau</h3><p>Développeur web</p><span class="location">⌖ Béziers</span><div class="tags"><span>Web</span><span>Informatique</span></div><a href="#connexion" class="button button-outline button-card">Voir le profil →</a></article>
+        <article class="profile-card" data-skill="soudure inox métallurgie maintenance"><div class="avatar avatar-3">CD</div><h3>Claire Durand</h3><p>Soudeuse inox</p><span class="location">⌖ Agde</span><div class="tags"><span>Soudure</span><span>Inox</span></div><a href="#connexion" class="button button-outline button-card">Voir le profil →</a></article>
+      </div><p class="demo-note">Les profils affichés sont des exemples de présentation.</p>
+    </section>
+    <section class="missions-panel" id="missions"><div class="section-heading"><p class="eyebrow">Espace indépendant</p><h2>Trouvez votre prochaine mission.</h2><p>Des opportunités proches de vous, adaptées à vos compétences.</p></div>
+      <form class="filters" id="mission-search"><input id="mission-skill" placeholder="Métier, compétence…" aria-label="Métier ou compétence"><input id="mission-location" placeholder="Votre localisation" aria-label="Localisation"><select id="duration-filter" aria-label="Durée"><option value="">Toutes les durées</option><option>Quelques heures</option><option>1 jour</option><option>Plusieurs jours</option><option>Récurrente</option><option>Plusieurs semaines</option></select><button class="button button-dark" type="submit">Rechercher</button></form>
+      <div class="mission-grid" id="mission-results"><article class="mission-card" data-skill="soudure inox métallurgie" data-location="agde"><span class="mission-symbol">⚒</span><span class="category">Artisanat</span><h3>Soudure inox</h3><p>Agde · 1 jour</p><small>Réalisation d'un garde-corps en inox.</small><a href="#connexion" class="button button-dark button-card">Voir l'offre →</a></article><article class="mission-card" data-skill="développement web informatique" data-location="beziers"><span class="mission-symbol">⌘</span><span class="category">Informatique</span><h3>Développeur web</h3><p>Béziers · 2 mois</p><small>Développement d'un site vitrine.</small><a href="#connexion" class="button button-dark button-card">Voir l'offre →</a></article><article class="mission-card" data-skill="peinture bâtiment rénovation" data-location="sete"><span class="mission-symbol">▰</span><span class="category">Bâtiment</span><h3>Peinture intérieure</h3><p>Sète · 1 semaine</p><small>Rénovation d'un local commercial.</small><a href="#connexion" class="button button-dark button-card">Voir l'offre →</a></article></div><p class="demo-note">Les missions affichées sont des exemples de présentation.</p>
+    </section>
+    <section class="pricing" id="tarifs"><div class="price-business"><p class="eyebrow">Pour les entreprises</p><div class="price">10 € <small>/ mois</small></div><p>Sans engagement · Résiliable à tout moment</p><ul><li>Publication de missions</li><li>Recherche de professionnels</li><li>Accès aux profils et compétences</li><li>Contact direct</li><li>Aucune commission</li></ul><a class="button button-light" href="#connexion">Créer un compte entreprise →</a></div><div class="price-independent"><p class="eyebrow">Pour les indépendants</p><div class="price">0 €</div><p>Inscription gratuite</p><ul><li>Profil professionnel</li><li>Présentation des compétences</li><li>Accès aux missions</li><li>Candidatures sans frais</li></ul><a class="button button-outline" href="#connexion">Créer mon profil →</a></div></section>
+    <section class="partner-banner" id="partenaires"><div class="partner-icon">📣</div><div><h2>Vous êtes une entreprise ou un partenaire ?</h2><p>Réservez un espace publicitaire et faites connaître votre activité.</p></div><a class="button button-dark" href="#connexion">En savoir plus →</a></section>
+    <section class="login-placeholder" id="connexion"><h2>RenfortPro</h2><p>Les comptes et inscriptions seront ajoutés lors de la prochaine étape.</p></section>
+  </main>
+  <footer><div class="footer-brand">Renfort<span>Pro</span><small>Le bon renfort. Au bon moment.</small></div><nav><a href="#">Mentions légales</a><a href="#">Conditions d'utilisation</a><a href="#">Confidentialité</a><a href="#">FAQ</a></nav><small>© RenfortPro — Projet en cours de conception</small></footer>
+  <script src="script.js"></script>
+</body>
+</html>
