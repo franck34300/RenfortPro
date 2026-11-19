@@ -112,6 +112,7 @@
           <label for="signup-email">Adresse e-mail</label><input id="signup-email" type="email" autocomplete="email" required>
           <label for="signup-password">Mot de passe (6 caractères minimum)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="6" required>
           <button class="button button-dark auth-submit" type="submit">Créer mon compte</button>
+          <button class="button button-outline auth-submit" type="button" id="google-signup">Créer / continuer avec Google</button>
           <p id="signup-message" class="auth-message" role="status"></p>
         </form>
         <form id="login-form" class="auth-form" hidden>
@@ -119,6 +120,7 @@
           <label for="login-email">Adresse e-mail</label><input id="login-email" type="email" autocomplete="email" required>
           <label for="login-password">Mot de passe</label><input id="login-password" type="password" autocomplete="current-password" required>
           <button class="button button-dark auth-submit" type="submit">Me connecter</button>
+          <button class="button button-outline auth-submit" type="button" id="google-login">Continuer avec Google</button>
           <p id="login-message" class="auth-message" role="status"></p>
         </form>
         <div id="account-panel" class="account-panel" hidden>
@@ -154,7 +156,6 @@
     </section>
   </main>
   <footer><div class="footer-brand">Renfort<span>Pro</span><small>Le bon renfort. Au bon moment.</small></div><nav><a href="#">Mentions légales</a><a href="#">Conditions d'utilisation</a><a href="#">Confidentialité</a><a href="#">FAQ</a></nav><small>© RenfortPro — Projet en cours de conception</small></footer>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
