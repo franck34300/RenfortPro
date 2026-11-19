@@ -76,6 +76,13 @@ accountType?.addEventListener('change',()=>{
 });
 accountType?.dispatchEvent(new Event('change'));
 
+document.querySelector('#signup-independent-photo')?.addEventListener('change',e=>{
+  const file=e.target.files?.[0],preview=document.querySelector('#signup-independent-photo-preview');
+  if(!file){preview.hidden=true;return;}
+  if(!validateImage(file,signupMessage)){e.target.value='';preview.hidden=true;return;}
+  preview.src=URL.createObjectURL(file);preview.hidden=false;
+});
+
 async function displayAccount(user){
   signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
   document.querySelector('#show-signup').classList.remove('active');
@@ -186,8 +193,27 @@ signupForm?.addEventListener('submit',async e=>{
   });
   submit.disabled=false;submit.textContent='Créer mon compte';
   if(error){showAuthMessage(signupMessage,error.message==='User already registered'?'Cette adresse e-mail possède déjà un compte. Connectez-vous.':error.message,true);return;}
-  if(data.session&&data.user){showAuthMessage(signupMessage,'Votre compte est créé.');await displayAccount(data.user);}
-  else{showAuthMessage(signupMessage,'Votre inscription est enregistrée. Consultez votre boîte mail pour confirmer votre adresse avant de vous connecter.');}
+  if(data.session&&data.user){
+    const photo=document.querySelector('#signup-independent-photo')?.files?.[0];
+    if(type==='independant'&&photo){
+      try{
+        if(!validateImage(photo,signupMessage))return;
+        const url=await uploadProfileImage(photo,data.user.id,'independent');
+        const {error:photoError}=await authClient.from('profiles').update({avatar_url:url}).eq('id',data.user.id);
+        if(photoError)throw photoError;
+      }catch(photoError){
+        showAuthMessage(signupMessage,'Compte créé, mais la photo n’a pas pu être enregistrée : '+photoError.message,true);
+        await displayAccount(data.user);return;
+      }
+    }
+    showAuthMessage(signupMessage,'Votre compte et votre profil sont créés.');
+    await displayAccount(data.user);
+  }else{
+    const hasPhoto=type==='independant'&&!!document.querySelector('#signup-independent-photo')?.files?.[0];
+    showAuthMessage(signupMessage,hasPhoto
+      ?'Votre inscription est enregistrée. Confirmez votre adresse e-mail, puis connectez-vous pour enregistrer votre photo de profil.'
+      :'Votre inscription est enregistrée. Consultez votre boîte mail pour confirmer votre adresse avant de vous connecter.');
+  }
 });
 loginForm?.addEventListener('submit',async e=>{
   e.preventDefault();
