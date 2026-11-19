@@ -45,7 +45,51 @@
     </section>
     <section class="pricing" id="tarifs"><div class="price-business"><p class="eyebrow">Pour les entreprises</p><div class="price">10 € <small>/ mois</small></div><p>Sans engagement · Résiliable à tout moment</p><ul><li>Publication de missions</li><li>Recherche de professionnels</li><li>Accès aux profils et compétences</li><li>Contact direct</li><li>Aucune commission</li></ul><a class="button button-light" href="#connexion">Créer un compte entreprise →</a></div><div class="price-independent"><p class="eyebrow">Pour les indépendants</p><div class="price">0 €</div><p>Inscription gratuite</p><ul><li>Profil professionnel</li><li>Présentation des compétences</li><li>Accès aux missions</li><li>Candidatures sans frais</li></ul><a class="button button-outline" href="#connexion">Créer mon profil →</a></div></section>
     <section class="partner-banner" id="partenaires"><div class="partner-icon">📣</div><div><h2>Vous êtes une entreprise ou un partenaire ?</h2><p>Réservez un espace publicitaire et faites connaître votre activité.</p></div><a class="button button-dark" href="#connexion">En savoir plus →</a></section>
-    <section class="login-placeholder" id="connexion"><h2>RenfortPro</h2><p>Les comptes et inscriptions seront ajoutés lors de la prochaine étape.</p></section>
+        <section class="auth-section" id="connexion">
+      <div class="auth-heading">
+        <p class="eyebrow">Rejoignez RenfortPro</p>
+        <h2>Votre espace professionnel</h2>
+        <p>Créez votre compte entreprise ou indépendant, ou connectez-vous à votre espace.</p>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" id="show-signup">Créer un compte</button>
+          <button type="button" class="auth-tab" id="show-login">Se connecter</button>
+        </div>
+        <form id="signup-form" class="auth-form">
+          <h3>Créer mon compte</h3>
+          <label for="account-type">Je suis</label>
+          <select id="account-type" required><option value="entreprise">Une entreprise</option><option value="independant">Un indépendant</option></select>
+          <label for="signup-name">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
+          <div id="company-fields">
+            <label for="company-name">Nom de l'entreprise</label><input id="company-name" autocomplete="organization">
+            <label for="company-siret">SIRET (facultatif)</label><input id="company-siret" inputmode="numeric" maxlength="14">
+          </div>
+          <div id="independent-fields" hidden>
+            <label for="independent-skills">Vos compétences / métiers</label><input id="independent-skills" placeholder="Ex. soudure, électricité, manutention">
+            <label for="independent-description">Présentation</label><textarea id="independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
+          </div>
+          <label for="signup-city">Ville</label><input id="signup-city" autocomplete="address-level2" required>
+          <label for="signup-phone">Téléphone</label><input id="signup-phone" type="tel" autocomplete="tel">
+          <label for="signup-email">Adresse e-mail</label><input id="signup-email" type="email" autocomplete="email" required>
+          <label for="signup-password">Mot de passe (6 caractères minimum)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="6" required>
+          <button class="button button-dark auth-submit" type="submit">Créer mon compte</button>
+          <p id="signup-message" class="auth-message" role="status"></p>
+        </form>
+        <form id="login-form" class="auth-form" hidden>
+          <h3>Connexion</h3>
+          <label for="login-email">Adresse e-mail</label><input id="login-email" type="email" autocomplete="email" required>
+          <label for="login-password">Mot de passe</label><input id="login-password" type="password" autocomplete="current-password" required>
+          <button class="button button-dark auth-submit" type="submit">Me connecter</button>
+          <p id="login-message" class="auth-message" role="status"></p>
+        </form>
+        <div id="account-panel" class="account-panel" hidden>
+          <h3 id="account-welcome">Bienvenue !</h3><dl id="account-details"></dl>
+          <button type="button" class="button button-outline auth-submit" id="logout-button">Se déconnecter</button>
+        </div>
+      </div>
+      <p class="auth-privacy">Vos informations servent à créer votre espace RenfortPro. Elles ne sont pas affichées publiquement sans votre accord.</p>
+    </section>
   </main>
   <footer><div class="footer-brand">Renfort<span>Pro</span><small>Le bon renfort. Au bon moment.</small></div><nav><a href="#">Mentions légales</a><a href="#">Conditions d'utilisation</a><a href="#">Confidentialité</a><a href="#">FAQ</a></nav><small>© RenfortPro — Projet en cours de conception</small></footer>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
