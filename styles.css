@@ -45,3 +45,14 @@
 .visual-float-top{right:5%;top:16%}
 .visual-float-bottom{left:5%;bottom:15%}
 @media(max-width:650px){.renfort-visual{min-height:190px}.visual-card-main{width:72%;padding:18px 12px}.visual-label{font-size:8px}.visual-main-icon{width:54px;height:54px;border-radius:17px;font-size:32px;margin:14px auto}.visual-card-main strong{font-size:16px}.visual-card-main small{font-size:9px}.visual-card-float{padding:9px 11px;gap:7px}.visual-card-float strong{font-size:9px}.visual-card-float small{font-size:8px}.visual-mini-icon{width:24px;height:24px}.visual-float-top{right:2%;top:8%}.visual-float-bottom{left:2%;bottom:8%}}
+
+/* Fiches profils et modal de consultation */
+.profile-card{transition:transform .18s,box-shadow .18s}.profile-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #152c1b12}
+.profile-card .location{display:inline-block;margin-top:4px}.profile-modal[hidden]{display:none!important}.profile-modal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px}
+.profile-modal-backdrop{position:absolute;inset:0;background:#13271dbb;backdrop-filter:blur(4px)}
+.profile-modal-content{position:relative;z-index:1;width:min(100%,520px);max-height:min(88vh,760px);overflow:auto;background:#fffdf9;border-radius:24px;padding:30px;text-align:center;box-shadow:0 24px 80px #10251940}
+.profile-modal-close{position:absolute;right:14px;top:12px;border:0;background:#f0ede6;color:#194631;width:36px;height:36px;border-radius:50%;font-size:25px;cursor:pointer}
+.profile-modal-avatar{margin:0 auto 15px;width:76px;height:76px;font-size:24px}.profile-modal-content h2{font-family:Georgia,serif;color:var(--green);font-size:30px;margin:4px 0}.profile-modal-job{color:var(--muted);margin:0 0 18px}
+.profile-modal-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}.profile-modal-facts span{padding:11px;border-radius:10px;background:#f1f5f0;color:#31563c;font-size:12px;font-weight:650}
+#profile-modal-description{line-height:1.65;color:#4c5850;text-align:left;margin:18px 0}.profile-modal-tags{margin:12px 0}.profile-modal-contact{width:100%;margin-top:12px}body.modal-open{overflow:hidden}
+@media(max-width:600px){.profile-modal-content{padding:25px 18px}.profile-modal-facts{grid-template-columns:1fr}.profile-modal-content h2{font-size:26px}}
