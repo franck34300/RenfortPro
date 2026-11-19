@@ -43,10 +43,31 @@ const missionForm=document.querySelector('#mission-search');
 missionForm?.addEventListener('submit',e=>{e.preventDefault();const skill=document.querySelector('#mission-skill').value.toLowerCase().trim();const place=document.querySelector('#mission-location').value.toLowerCase().trim();let shown=0;document.querySelectorAll('#mission-results .mission-card').forEach(card=>{const matchSkill=!skill||card.dataset.skill.includes(skill);const matchPlace=!place||card.dataset.location.includes(place);card.hidden=!(matchSkill&&matchPlace);if(!card.hidden)shown++;});let old=document.querySelector('#mission-count');if(!old){old=document.createElement('span');old.id='mission-count';document.querySelector('#mission-results').before(old);}old.textContent=shown+' mission'+(shown>1?'s':'')+' affichée'+(shown>1?'s':'');});
 const menu=document.querySelector('.menu-toggle');menu?.addEventListener('click',()=>document.querySelector('.main-nav').classList.toggle('open'));
 
-// Authentification RenfortPro — projet Supabase indépendant.
-const SUPABASE_URL='https://bsuvuedqugpmvcklhmnu.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_37MDF5o0IyLtddRl6zYC4Q_mmEYBF-S';
-const authClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+// Authentification RenfortPro — Firebase Auth + Cloud Firestore.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signInWithPopup, sendEmailVerification,
+  signOut, onAuthStateChanged, updateProfile
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAY9foPoP3fEgjXw0bCz0AnbKaC8cuvVaE",
+  authDomain: "renfortpro.firebaseapp.com",
+  projectId: "renfortpro",
+  storageBucket: "renfortpro.firebasestorage.app",
+  messagingSenderId: "297512900802",
+  appId: "1:297512900802:web:931eaf625d425db314035b",
+  measurementId: "G-98Z47H1SK2"
+};
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+
 const signupForm=document.querySelector('#signup-form');
 const loginForm=document.querySelector('#login-form');
 const accountPanel=document.querySelector('#account-panel');
@@ -77,47 +98,6 @@ accountType?.addEventListener('change',()=>{
 });
 accountType?.dispatchEvent(new Event('change'));
 
-document.querySelector('#signup-independent-photo')?.addEventListener('change',e=>{
-  const file=e.target.files?.[0],preview=document.querySelector('#signup-independent-photo-preview');
-  if(!file){preview.hidden=true;return;}
-  if(!validateImage(file,signupMessage)){e.target.value='';preview.hidden=true;return;}
-  preview.src=URL.createObjectURL(file);preview.hidden=false;
-});
-
-async function displayAccount(user){
-  signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
-  document.querySelector('#show-signup').classList.remove('active');
-  document.querySelector('#show-login').classList.remove('active');
-  const {data,error}=await authClient.from('profiles').select('account_type,full_name,company_name,city,skills,description,avatar_url,siret,phone').eq('id',user.id).single();
-  if(error){document.querySelector('#account-welcome').textContent='Connexion réussie. Votre profil est en cours de chargement.';document.querySelector('#account-details').replaceChildren();return;}
-  const isCompany=data.account_type==='entreprise';
-  document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.email)+' !';
-  const details=document.querySelector('#account-details');details.replaceChildren();
-  const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),['Ville',data.city]];
-  rows.filter(row=>row[1]).forEach(([label,value])=>{const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);});
-  const independentPhotoBox=document.querySelector('#independent-photo-setting');
-  independentPhotoBox.hidden=isCompany;
-  const avatarPreview=document.querySelector('#independent-photo-preview');
-  avatarPreview.hidden=!data.avatar_url;avatarPreview.src=data.avatar_url||'';
-  const companyBox=document.querySelector('#company-space-setting');
-  const showCompany=document.querySelector('#show-company-space');
-  const {data:company,error:companyError}=await authClient.from('company_profiles').select('company_name,siret,contact_name,phone,city,image_url').eq('user_id',user.id).maybeSingle();
-  if(companyError) console.warn('Company profile read:',companyError.message);
-  const companyExists=!!company;
-  showCompany.hidden=isCompany||companyExists;
-  companyBox.hidden=!(isCompany||companyExists);
-  document.querySelector('#company-space-name').value=company?.company_name||(isCompany?data.company_name:'')||'';
-  document.querySelector('#company-space-siret').value=company?.siret||(isCompany?data.siret:'')||'';
-  document.querySelector('#company-space-contact').value=company?.contact_name||(isCompany?data.full_name:'')||'';
-  document.querySelector('#company-space-phone').value=company?.phone||(isCompany?data.phone:'')||'';
-  document.querySelector('#company-space-city').value=company?.city||(isCompany?data.city:'')||'';
-  const companyPreview=document.querySelector('#company-photo-preview');
-  companyPreview.hidden=!company?.image_url;companyPreview.src=company?.image_url||'';
-  if(isCompany&&!companyExists){
-    const seed={user_id:user.id,company_name:data.company_name||'',siret:data.siret||'',contact_name:data.full_name||'',phone:data.phone||'',city:data.city||''};
-    if(seed.company_name){const {error:seedError}=await authClient.from('company_profiles').insert(seed);if(seedError)console.warn('Company profile initialization:',seedError.message);}
-  }
-}
 function validateImage(file,messageTarget){
   if(!file){showAuthMessage(messageTarget,'Choisissez une image avant de continuer.',true);return false;}
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)){showAuthMessage(messageTarget,'Format accepté : JPG, PNG ou WebP.',true);return false;}
@@ -128,52 +108,149 @@ function previewImage(inputId,previewId){
   document.querySelector('#'+inputId)?.addEventListener('change',e=>{
     const file=e.target.files?.[0],preview=document.querySelector('#'+previewId);
     if(!file){preview.hidden=true;return;}
-    if(!validateImage(file,null)){preview.hidden=true;return;}
+    if(!validateImage(file,null)){e.target.value='';preview.hidden=true;return;}
     preview.src=URL.createObjectURL(file);preview.hidden=false;
   });
 }
 previewImage('independent-photo-file','independent-photo-preview');
 previewImage('company-photo-file','company-photo-preview');
-async function uploadProfileImage(file,userId,kind){
-  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
-  const path=userId+'/'+kind+'/'+Date.now()+'.'+ext;
-  const {error}=await authClient.storage.from('renfortpro-images').upload(path,file,{contentType:file.type,cacheControl:'3600'});
-  if(error)throw error;
-  return authClient.storage.from('renfortpro-images').getPublicUrl(path).data.publicUrl;
+document.querySelector('#signup-independent-photo')?.addEventListener('change',e=>{
+  const file=e.target.files?.[0],preview=document.querySelector('#signup-independent-photo-preview');
+  if(!file){preview.hidden=true;return;}
+  if(!validateImage(file,signupMessage)){e.target.value='';preview.hidden=true;return;}
+  preview.src=URL.createObjectURL(file);preview.hidden=false;
+});
+
+async function readProfile(user){
+  const ref=doc(db,'profiles',user.uid);
+  const snap=await getDoc(ref);
+  return snap.exists()?snap.data():null;
+}
+async function displayAccount(user){
+  signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
+  document.querySelector('#show-signup').classList.remove('active');
+  document.querySelector('#show-login').classList.remove('active');
+  let data;
+  try { data=await readProfile(user); }
+  catch(error) {
+    document.querySelector('#account-welcome').textContent='Compte connecté, mais profil inaccessible.';
+    document.querySelector('#account-details').replaceChildren();
+    showAuthMessage(loginMessage,'Vérifiez les règles de sécurité Firestore : '+error.message,true);
+    return;
+  }
+  if(!data){
+    document.querySelector('#account-welcome').textContent='Bienvenue ! Votre profil RenfortPro doit être complété.';
+    document.querySelector('#account-details').replaceChildren();
+    document.querySelector('#independent-photo-setting').hidden=true;
+    document.querySelector('#company-space-setting').hidden=true;
+    document.querySelector('#show-company-space').hidden=false;
+    return;
+  }
+  const isCompany=data.account_type==='entreprise';
+  document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.displayName||user.email||'')+' !';
+  const details=document.querySelector('#account-details');details.replaceChildren();
+  const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),['Ville',data.city]];
+  rows.filter(row=>row[1]).forEach(([label,value])=>{const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);});
+  document.querySelector('#independent-photo-setting').hidden=isCompany;
+  const avatarPreview=document.querySelector('#independent-photo-preview');
+  avatarPreview.hidden=!data.avatar_url;avatarPreview.src=data.avatar_url||'';
+  const companyRef=doc(db,'company_profiles',user.uid);
+  let company=null;
+  try { const companySnap=await getDoc(companyRef); if(companySnap.exists())company=companySnap.data(); }
+  catch(error){console.warn('Company profile read:',error.message);}
+  const companyExists=!!company;
+  const showCompany=document.querySelector('#show-company-space');
+  const companyBox=document.querySelector('#company-space-setting');
+  showCompany.hidden=isCompany||companyExists;
+  companyBox.hidden=!(isCompany||companyExists);
+  document.querySelector('#company-space-name').value=company?.company_name||(isCompany?data.company_name:'')||'';
+  document.querySelector('#company-space-siret').value=company?.siret||(isCompany?data.siret:'')||'';
+  document.querySelector('#company-space-contact').value=company?.contact_name||(isCompany?data.full_name:'')||'';
+  document.querySelector('#company-space-phone').value=company?.phone||(isCompany?data.phone:'')||'';
+  document.querySelector('#company-space-city').value=company?.city||(isCompany?data.city:'')||'';
+  const companyPreview=document.querySelector('#company-photo-preview');
+  companyPreview.hidden=!company?.image_url;companyPreview.src=company?.image_url||'';
+  if(isCompany&&!companyExists&&data.company_name){
+    await setDoc(companyRef,{
+      company_name:data.company_name||'',siret:data.siret||'',
+      contact_name:data.full_name||'',phone:data.phone||'',city:data.city||'',
+      created_at:serverTimestamp()
+    });
+  }
+}
+
+// L'hébergement des images sera raccordé à une solution gratuite distincte.
+// Ne pas activer Firebase Storage/Blaze : ce service demande un forfait avec facturation.
+async function uploadProfileImage(){
+  throw new Error('Le stockage des photos n’est pas encore raccordé. Aucun forfait payant n’a été activé.');
 }
 document.querySelector('#save-independent-photo')?.addEventListener('click',async()=>{
-  const user=(await authClient.auth.getUser()).data.user,file=document.querySelector('#independent-photo-file').files?.[0],msg=document.querySelector('#independent-photo-message'),btn=document.querySelector('#save-independent-photo');
+  const user=auth.currentUser,file=document.querySelector('#independent-photo-file').files?.[0],msg=document.querySelector('#independent-photo-message'),btn=document.querySelector('#save-independent-photo');
   if(!validateImage(file,msg))return;
   btn.disabled=true;btn.textContent='Envoi…';showAuthMessage(msg,'');
-  try{const url=await uploadProfileImage(file,user.id,'independent');const {error}=await authClient.from('profiles').update({avatar_url:url}).eq('id',user.id);if(error)throw error;document.querySelector('#independent-photo-preview').src=url;showAuthMessage(msg,'Photo de profil enregistrée.');}
-  catch(error){showAuthMessage(msg,'Impossible d’enregistrer la photo : '+error.message,true);}
+  try{const url=await uploadProfileImage(file,user.uid,'independent');await updateDoc(doc(db,'profiles',user.uid),{avatar_url:url});}
+  catch(error){showAuthMessage(msg,'Photo non enregistrée : '+error.message,true);}
   finally{btn.disabled=false;btn.textContent='Enregistrer ma photo';}
 });
 document.querySelector('#show-company-space')?.addEventListener('click',()=>{document.querySelector('#company-space-setting').hidden=false;document.querySelector('#show-company-space').hidden=true;});
 document.querySelector('#save-company-profile')?.addEventListener('click',async()=>{
-  const user=(await authClient.auth.getUser()).data.user,file=document.querySelector('#company-photo-file').files?.[0],msg=document.querySelector('#company-profile-message'),btn=document.querySelector('#save-company-profile');
+  const user=auth.currentUser,file=document.querySelector('#company-photo-file').files?.[0],msg=document.querySelector('#company-profile-message'),btn=document.querySelector('#save-company-profile');
   const name=document.querySelector('#company-space-name').value.trim(),siret=document.querySelector('#company-space-siret').value.trim();
   if(!name){showAuthMessage(msg,'Le nom de l’entreprise est obligatoire.',true);return;}
-  if(siret&&!/^\\d{14}$/.test(siret)){showAuthMessage(msg,'Le SIRET doit contenir 14 chiffres.',true);return;}
+  if(siret&&!/^\d{14}$/.test(siret)){showAuthMessage(msg,'Le SIRET doit contenir 14 chiffres.',true);return;}
   if(file&&!validateImage(file,msg))return;
   btn.disabled=true;btn.textContent='Enregistrement…';showAuthMessage(msg,'');
   try{
     let imageUrl=document.querySelector('#company-photo-preview').src;
-    if(file)imageUrl=await uploadProfileImage(file,user.id,'company');
+    if(file)imageUrl=await uploadProfileImage(file,user.uid,'company');
     if(!imageUrl||imageUrl.startsWith('blob:'))imageUrl='';
-    const payload={user_id:user.id,company_name:name,siret,contact_name:document.querySelector('#company-space-contact').value.trim(),phone:document.querySelector('#company-space-phone').value.trim(),city:document.querySelector('#company-space-city').value.trim(),image_url:imageUrl,updated_at:new Date().toISOString()};
-    const {error}=await authClient.from('company_profiles').upsert(payload,{onConflict:'user_id'});if(error)throw error;
-    if(file)document.querySelector('#company-photo-preview').src=imageUrl;
+    await setDoc(doc(db,'company_profiles',user.uid),{
+      company_name:name,siret,
+      contact_name:document.querySelector('#company-space-contact').value.trim(),
+      phone:document.querySelector('#company-space-phone').value.trim(),
+      city:document.querySelector('#company-space-city').value.trim(),
+      image_url:imageUrl,updated_at:serverTimestamp()
+    },{merge:true});
     showAuthMessage(msg,'Espace entreprise enregistré.');document.querySelector('#show-company-space').hidden=true;
   }catch(error){showAuthMessage(msg,'Enregistrement impossible : '+error.message,true);}
   finally{btn.disabled=false;btn.textContent='Enregistrer mon espace entreprise';}
+});
+
+async function createProfileForUser(user,metadata){
+  const ref=doc(db,'profiles',user.uid);
+  const existing=await getDoc(ref);
+  if(!existing.exists()){
+    await setDoc(ref,{
+      account_type:metadata.account_type||'independant',
+      full_name:metadata.full_name||user.displayName||'',
+      company_name:metadata.company_name||'',
+      siret:metadata.siret||'',
+      phone:metadata.phone||'',
+      city:metadata.city||'',
+      skills:metadata.skills||'',
+      description:metadata.description||'',
+      avatar_url:'',
+      email:user.email||'',
+      created_at:serverTimestamp()
+    });
+  }
+  const type=metadata.account_type||'';
+  if(type==='entreprise'){
+    const companyRef=doc(db,'company_profiles',user.uid);
+    const companySnap=await getDoc(companyRef);
+    if(!companySnap.exists()){
+      await setDoc(companyRef,{
+        company_name:metadata.company_name||'',siret:metadata.siret||'',
+        contact_name:metadata.full_name||'',phone:metadata.phone||'',
+        city:metadata.city||'',image_url:'',created_at:serverTimestamp()
+      });
+    }
+  }
 }
-);
+
 signupForm?.addEventListener('submit',async e=>{
   e.preventDefault();
-  if(!authClient){showAuthMessage(signupMessage,'Le service de compte ne se charge pas. Actualisez la page.',true);return;}
-  const type=accountType.value;
-  const siret=document.querySelector('#company-siret').value.trim();
+  const type=accountType.value,siret=document.querySelector('#company-siret').value.trim();
   if(type==='entreprise'&&siret&&!/^\d{14}$/.test(siret)){showAuthMessage(signupMessage,'Le SIRET doit contenir 14 chiffres.',true);return;}
   const submit=signupForm.querySelector('button[type="submit"]');
   submit.disabled=true;submit.textContent='Création en cours…';showAuthMessage(signupMessage,'');
@@ -187,59 +264,68 @@ signupForm?.addEventListener('submit',async e=>{
     skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
     description:type==='independant'?document.querySelector('#independent-description').value.trim():''
   };
-  const {data,error}=await authClient.auth.signUp({
-    email:document.querySelector('#signup-email').value.trim(),
-    password:document.querySelector('#signup-password').value,
-    options:{data:metadata,emailRedirectTo:window.location.origin}
-  });
-  submit.disabled=false;submit.textContent='Créer mon compte';
-  if(error){showAuthMessage(signupMessage,error.message==='User already registered'?'Cette adresse e-mail possède déjà un compte. Connectez-vous.':error.message,true);return;}
-  if(data.session&&data.user){
+  try{
+    const credential=await createUserWithEmailAndPassword(auth,document.querySelector('#signup-email').value.trim(),document.querySelector('#signup-password').value);
+    if(metadata.full_name)await updateProfile(credential.user,{displayName:metadata.full_name});
+    await createProfileForUser(credential.user,metadata);
+    try{await sendEmailVerification(credential.user);}catch(error){console.warn('Email verification:',error.message);}
     const photo=document.querySelector('#signup-independent-photo')?.files?.[0];
-    if(type==='independant'&&photo){
-      try{
-        if(!validateImage(photo,signupMessage))return;
-        const url=await uploadProfileImage(photo,data.user.id,'independent');
-        const {error:photoError}=await authClient.from('profiles').update({avatar_url:url}).eq('id',data.user.id);
-        if(photoError)throw photoError;
-      }catch(photoError){
-        showAuthMessage(signupMessage,'Compte créé, mais la photo n’a pas pu être enregistrée : '+photoError.message,true);
-        await displayAccount(data.user);return;
-      }
-    }
-    showAuthMessage(signupMessage,'Votre compte et votre profil sont créés.');
-    await displayAccount(data.user);
-  }else{
-    const hasPhoto=type==='independant'&&!!document.querySelector('#signup-independent-photo')?.files?.[0];
-    showAuthMessage(signupMessage,hasPhoto
-      ?'Votre inscription est enregistrée. Confirmez votre adresse e-mail, puis connectez-vous pour enregistrer votre photo de profil.'
-      :'Votre inscription est enregistrée. Consultez votre boîte mail pour confirmer votre adresse avant de vous connecter.');
-  }
+    if(type==='independant'&&photo)showAuthMessage(signupMessage,'Compte créé. La photo sera ajoutée lorsque l’hébergement gratuit sera raccordé.');
+    else showAuthMessage(signupMessage,'Votre compte est créé. Un e-mail de vérification vient de vous être envoyé.');
+    await displayAccount(credential.user);
+  }catch(error){
+    const messages={
+      'auth/email-already-in-use':'Cette adresse e-mail possède déjà un compte. Connectez-vous.',
+      'auth/weak-password':'Le mot de passe doit contenir au moins 6 caractères.',
+      'auth/invalid-email':'Cette adresse e-mail n’est pas valide.',
+      'permission-denied':'Firestore refuse l’écriture. Vérifiez les règles de sécurité.'
+    };
+    showAuthMessage(signupMessage,messages[error.code]||'Création impossible : '+error.message,true);
+  }finally{submit.disabled=false;submit.textContent='Créer mon compte';}
 });
+
+async function googleSignIn(){
+  try{
+    const credential=await signInWithPopup(auth,googleProvider);
+    const existing=await readProfile(credential.user);
+    if(!existing){
+      const type=accountType?.value||'independant';
+      const metadata={
+        account_type:type,
+        full_name:credential.user.displayName||'',
+        company_name:type==='entreprise'?document.querySelector('#company-name').value.trim():'',
+        siret:type==='entreprise'?document.querySelector('#company-siret').value.trim():'',
+        phone:document.querySelector('#signup-phone').value.trim(),
+        city:document.querySelector('#signup-city').value.trim(),
+        skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
+        description:type==='independant'?document.querySelector('#independent-description').value.trim():''
+      };
+      await createProfileForUser(credential.user,metadata);
+    }
+    await displayAccount(credential.user);
+  }catch(error){
+    showAuthMessage(loginMessage,'Connexion Google impossible : '+error.message,true);
+  }
+}
+document.querySelector('#google-login')?.addEventListener('click',googleSignIn);
+document.querySelector('#google-signup')?.addEventListener('click',googleSignIn);
+
 loginForm?.addEventListener('submit',async e=>{
   e.preventDefault();
-  if(!authClient){showAuthMessage(loginMessage,'Le service de compte ne se charge pas. Actualisez la page.',true);return;}
   const submit=loginForm.querySelector('button[type="submit"]');
   submit.disabled=true;submit.textContent='Connexion…';showAuthMessage(loginMessage,'');
-  const {data,error}=await authClient.auth.signInWithPassword({
-    email:document.querySelector('#login-email').value.trim(),
-    password:document.querySelector('#login-password').value
-  });
-  submit.disabled=false;submit.textContent='Me connecter';
-  if(error){showAuthMessage(loginMessage,'Connexion impossible : vérifiez votre adresse e-mail et votre mot de passe.',true);return;}
-  await displayAccount(data.user);
+  try{
+    const credential=await signInWithEmailAndPassword(auth,document.querySelector('#login-email').value.trim(),document.querySelector('#login-password').value);
+    await displayAccount(credential.user);
+  }catch(error){
+    showAuthMessage(loginMessage,'Connexion impossible : vérifiez votre adresse e-mail et votre mot de passe.',true);
+  }finally{submit.disabled=false;submit.textContent='Me connecter';}
 });
 document.querySelector('#logout-button')?.addEventListener('click',async()=>{
-  const {error}=await authClient.auth.signOut();
-  if(error){showAuthMessage(loginMessage,'La déconnexion a échoué. Réessayez.',true);return;}
-  setAuthMode('login');
+  try{await signOut(auth);setAuthMode('login');}
+  catch(error){showAuthMessage(loginMessage,'La déconnexion a échoué : '+error.message,true);}
 });
-if(authClient){
-  authClient.auth.getSession().then(({data})=>{if(data.session)displayAccount(data.session.user);});
-  authClient.auth.onAuthStateChange((event,session)=>{
-    if(event==='SIGNED_OUT')setAuthMode('login');
-    if(event==='SIGNED_IN'&&session?.user)displayAccount(session.user);
-  });
-}else{
-  showAuthMessage(signupMessage,'Le service de compte ne se charge pas. Vérifiez votre connexion internet.',true);
-}
+onAuthStateChanged(auth,user=>{
+  if(user)displayAccount(user);
+  else setAuthMode('login');
+});
