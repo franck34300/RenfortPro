@@ -216,7 +216,8 @@ document.querySelector('#save-company-profile')?.addEventListener('click',async(
   if(file&&!validateImage(file,msg))return;
   btn.disabled=true;btn.textContent='Enregistrement…';showAuthMessage(msg,'');
   try{
-    let imageUrl=document.querySelector('#company-photo-preview').src;
+    const companyPreview=document.querySelector('#company-photo-preview');
+    let imageUrl=companyPreview.hidden?'':companyPreview.src;
     if(file)imageUrl=await uploadProfileImage(file,user.uid,'company');
     if(!imageUrl||imageUrl.startsWith('blob:'))imageUrl='';
     await setDoc(doc(db,'company_profiles',user.uid),{
