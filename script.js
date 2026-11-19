@@ -1,15 +1,37 @@
 const profileForm=document.querySelector('#profile-search');
-function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim();}
+function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+const skillSynonyms={
+  soudeur:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
+  soudeuse:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
+  soudure:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
+  electricien:['electricien','electricienne','electricite','electrique'],
+  electricienne:['electricien','electricienne','electricite','electrique'],
+  electricite:['electricien','electricienne','electricite','electrique'],
+  plombier:['plombier','plombiere','plomberie'],
+  plomberie:['plombier','plombiere','plomberie'],
+  peintre:['peintre','peinture'],
+  peinture:['peintre','peinture'],
+  macon:['macon','maconnerie'],
+  maconnerie:['macon','maconnerie'],
+  menuisier:['menuisier','menuisiere','menuiserie'],
+  menuiserie:['menuisier','menuisiere','menuiserie'],
+  metallier:['metallier','metalliere','metallerie','soudeur','soudeuse','soudure'],
+  metalliere:['metallier','metalliere','metallerie','soudeur','soudeuse','soudure']
+};
 function filterProfiles(){
   const skill=normalizeText(document.querySelector('#skill-filter').value);
   const place=normalizeText(document.querySelector('#location-filter').value);
   const availability=document.querySelector('#availability-filter').value;
+  const terms=skill?skill.split(/\s+/):[];
   let shown=0;
   document.querySelectorAll('#profile-results .profile-card').forEach(card=>{
     const searchable=normalizeText(card.dataset.skill+' '+card.textContent);
     const location=normalizeText(card.dataset.location+' '+card.textContent);
-    const matchSkill=!skill||skill.split(/\\s+/).some(term=>searchable.includes(term));
-    const matchPlace=!place||place.split(/\\s+/).every(term=>location.includes(term));
+    const matchSkill=terms.every(term=>{
+      const alternatives=skillSynonyms[term]||[term];
+      return alternatives.some(alternative=>searchable.includes(alternative));
+    });
+    const matchPlace=!place||place.split(/\s+/).every(term=>location.includes(term));
     const matchAvailability=!availability||card.dataset.availability===availability;
     card.hidden=!(matchSkill&&matchPlace&&matchAvailability);
     if(!card.hidden)shown++;
