@@ -1,5 +1,44 @@
 const profileForm=document.querySelector('#profile-search');
-profileForm?.addEventListener('submit',e=>{e.preventDefault();const skill=document.querySelector('#skill-filter').value.toLowerCase().trim();const place=document.querySelector('#location-filter').value.toLowerCase().trim();let shown=0;document.querySelectorAll('#profile-results .profile-card').forEach(card=>{const matchSkill=!skill||card.dataset.skill.includes(skill);const matchPlace=!place||card.dataset.location.includes(place);card.hidden=!(matchSkill&&matchPlace);if(!card.hidden)shown++;});document.querySelector('#profile-count').textContent=shown+' profil'+(shown>1?'s':'');});
+function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim();}
+function filterProfiles(){
+  const skill=normalizeText(document.querySelector('#skill-filter').value);
+  const place=normalizeText(document.querySelector('#location-filter').value);
+  const availability=document.querySelector('#availability-filter').value;
+  let shown=0;
+  document.querySelectorAll('#profile-results .profile-card').forEach(card=>{
+    const searchable=normalizeText(card.dataset.skill+' '+card.textContent);
+    const location=normalizeText(card.dataset.location+' '+card.textContent);
+    const matchSkill=!skill||skill.split(/\\s+/).some(term=>searchable.includes(term));
+    const matchPlace=!place||place.split(/\\s+/).every(term=>location.includes(term));
+    const matchAvailability=!availability||card.dataset.availability===availability;
+    card.hidden=!(matchSkill&&matchPlace&&matchAvailability);
+    if(!card.hidden)shown++;
+  });
+  document.querySelector('#profile-count').textContent=shown+' profil'+(shown>1?'s':'');
+}
+profileForm?.addEventListener('submit',e=>{e.preventDefault();filterProfiles();});
+document.querySelector('#availability-filter')?.addEventListener('change',filterProfiles);
+document.querySelector('#skill-filter')?.addEventListener('input',filterProfiles);
+document.querySelector('#location-filter')?.addEventListener('input',filterProfiles);
+const profileModal=document.querySelector('#profile-modal');
+function openProfile(card){
+  const name=card.querySelector('h3')?.textContent||'Profil';
+  document.querySelector('#profile-modal-name').textContent=name;
+  document.querySelector('#profile-modal-job').textContent=card.querySelector('p')?.textContent||'';
+  document.querySelector('#profile-modal-avatar').textContent=card.querySelector('.avatar')?.textContent||'';
+  document.querySelector('#profile-modal-avatar').className='profile-modal-avatar avatar '+(card.querySelector('.avatar')?.classList[1]||'');
+  document.querySelector('#profile-modal-location').textContent='⌖ '+(card.querySelector('.location')?.textContent||'Localisation non renseignée').replace('⌖','').trim();
+  document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(card.dataset.availability||'À convenir');
+  document.querySelector('#profile-modal-experience').textContent=card.dataset.experience||'Expérience non précisée';
+  document.querySelector('#profile-modal-rate').textContent=card.dataset.rate||'Tarif à convenir';
+  document.querySelector('#profile-modal-description').textContent=card.dataset.description||'Description non renseignée';
+  const tags=document.querySelector('#profile-modal-tags');tags.replaceChildren();
+  (card.dataset.tags||'').split('|').filter(Boolean).forEach(tag=>{const span=document.createElement('span');span.textContent=tag;tags.append(span);});
+  profileModal.hidden=false;document.body.classList.add('modal-open');
+}
+document.querySelectorAll('#profile-results .profile-card .button-card').forEach(button=>button.addEventListener('click',e=>{e.preventDefault();openProfile(button.closest('.profile-card'));}));
+profileModal?.querySelectorAll('[data-close-profile]').forEach(el=>el.addEventListener('click',()=>{profileModal.hidden=true;document.body.classList.remove('modal-open');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&profileModal&&!profileModal.hidden){profileModal.hidden=true;document.body.classList.remove('modal-open');}});
 const missionForm=document.querySelector('#mission-search');
 missionForm?.addEventListener('submit',e=>{e.preventDefault();const skill=document.querySelector('#mission-skill').value.toLowerCase().trim();const place=document.querySelector('#mission-location').value.toLowerCase().trim();let shown=0;document.querySelectorAll('#mission-results .mission-card').forEach(card=>{const matchSkill=!skill||card.dataset.skill.includes(skill);const matchPlace=!place||card.dataset.location.includes(place);card.hidden=!(matchSkill&&matchPlace);if(!card.hidden)shown++;});let old=document.querySelector('#mission-count');if(!old){old=document.createElement('span');old.id='mission-count';document.querySelector('#mission-results').before(old);}old.textContent=shown+' mission'+(shown>1?'s':'')+' affichée'+(shown>1?'s':'');});
 const menu=document.querySelector('.menu-toggle');menu?.addEventListener('click',()=>document.querySelector('.main-nav').classList.toggle('open'));
