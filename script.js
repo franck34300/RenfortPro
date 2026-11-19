@@ -179,17 +179,32 @@ async function displayAccount(user){
   }
 }
 
-// L'hébergement des images sera raccordé à une solution gratuite distincte.
-// Ne pas activer Firebase Storage/Blaze : ce service demande un forfait avec facturation.
-async function uploadProfileImage(){
-  throw new Error('Le stockage des photos n’est pas encore raccordé. Aucun forfait payant n’a été activé.');
+// Hébergement des images via Cloudinary (préréglage non signé).
+// Firebase reste utilisé pour les comptes et les données ; aucun stockage Firebase payant.
+const CLOUDINARY_CLOUD_NAME = 'dudff0pyk';
+const CLOUDINARY_UPLOAD_PRESET = 'renfortpro_unsigned';
+async function uploadProfileImage(file,userId,kind){
+  if(!validateImage(file,null))throw new Error('Format ou taille de fichier non accepté.');
+  const body=new FormData();
+  body.append('file',file);
+  body.append('upload_preset',CLOUDINARY_UPLOAD_PRESET);
+  body.append('folder','renfortpro/'+userId);
+  body.append('context','type='+kind);
+  const response=await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD_NAME+'/image/upload',{method:'POST',body});
+  const result=await response.json();
+  if(!response.ok||!result.secure_url)throw new Error(result.error?.message||'Cloudinary n’a pas accepté cette image.');
+  return result.secure_url;
 }
 document.querySelector('#save-independent-photo')?.addEventListener('click',async()=>{
   const user=auth.currentUser,file=document.querySelector('#independent-photo-file').files?.[0],msg=document.querySelector('#independent-photo-message'),btn=document.querySelector('#save-independent-photo');
   if(!validateImage(file,msg))return;
   btn.disabled=true;btn.textContent='Envoi…';showAuthMessage(msg,'');
-  try{const url=await uploadProfileImage(file,user.uid,'independent');await updateDoc(doc(db,'profiles',user.uid),{avatar_url:url});}
-  catch(error){showAuthMessage(msg,'Photo non enregistrée : '+error.message,true);}
+  try{
+    const url=await uploadProfileImage(file,user.uid,'independent');
+    await updateDoc(doc(db,'profiles',user.uid),{avatar_url:url});
+    const preview=document.querySelector('#independent-photo-preview');preview.src=url;preview.hidden=false;
+    showAuthMessage(msg,'Photo de profil enregistrée.');
+  }catch(error){showAuthMessage(msg,'Photo non enregistrée : '+error.message,true);}
   finally{btn.disabled=false;btn.textContent='Enregistrer ma photo';}
 });
 document.querySelector('#show-company-space')?.addEventListener('click',()=>{document.querySelector('#company-space-setting').hidden=false;document.querySelector('#show-company-space').hidden=true;});
@@ -211,6 +226,7 @@ document.querySelector('#save-company-profile')?.addEventListener('click',async(
       city:document.querySelector('#company-space-city').value.trim(),
       image_url:imageUrl,updated_at:serverTimestamp()
     },{merge:true});
+    if(imageUrl){const preview=document.querySelector('#company-photo-preview');preview.src=imageUrl;preview.hidden=false;}
     showAuthMessage(msg,'Espace entreprise enregistré.');document.querySelector('#show-company-space').hidden=true;
   }catch(error){showAuthMessage(msg,'Enregistrement impossible : '+error.message,true);}
   finally{btn.disabled=false;btn.textContent='Enregistrer mon espace entreprise';}
@@ -270,8 +286,15 @@ signupForm?.addEventListener('submit',async e=>{
     await createProfileForUser(credential.user,metadata);
     try{await sendEmailVerification(credential.user);}catch(error){console.warn('Email verification:',error.message);}
     const photo=document.querySelector('#signup-independent-photo')?.files?.[0];
-    if(type==='independant'&&photo)showAuthMessage(signupMessage,'Compte créé. La photo sera ajoutée lorsque l’hébergement gratuit sera raccordé.');
-    else showAuthMessage(signupMessage,'Votre compte est créé. Un e-mail de vérification vient de vous être envoyé.');
+    if(type==='independant'&&photo){
+      try{
+        const avatarUrl=await uploadProfileImage(photo,credential.user.uid,'independent');
+        await updateDoc(doc(db,'profiles',credential.user.uid),{avatar_url:avatarUrl});
+        showAuthMessage(signupMessage,'Compte créé et photo de profil enregistrée. Un e-mail de vérification vous a été envoyé.');
+      }catch(imageError){
+        showAuthMessage(signupMessage,'Compte créé, mais la photo n’a pas pu être envoyée : '+imageError.message,true);
+      }
+    }else showAuthMessage(signupMessage,'Votre compte est créé. Un e-mail de vérification vient de vous être envoyé.');
     await displayAccount(credential.user);
   }catch(error){
     const messages={
