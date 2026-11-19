@@ -56,3 +56,15 @@
 .profile-modal-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}.profile-modal-facts span{padding:11px;border-radius:10px;background:#f1f5f0;color:#31563c;font-size:12px;font-weight:650}
 #profile-modal-description{line-height:1.65;color:#4c5850;text-align:left;margin:18px 0}.profile-modal-tags{margin:12px 0}.profile-modal-contact{width:100%;margin-top:12px}body.modal-open{overflow:hidden}
 @media(max-width:600px){.profile-modal-content{padding:25px 18px}.profile-modal-facts{grid-template-columns:1fr}.profile-modal-content h2{font-size:26px}}
+
+/* Gestion des photos de profil et entreprise */
+.account-media-settings{display:grid;gap:16px;margin:22px 0;text-align:left}
+.media-setting{border:1px solid var(--line);background:#fffdf9;border-radius:14px;padding:18px}
+.media-setting h4{font-family:Georgia,serif;font-size:19px;color:var(--green);margin:0 0 12px}
+.media-setting label{display:block;font-size:12px;font-weight:700;color:#39443d;margin:12px 0 6px}
+.media-setting input:not([type=file]){width:100%;border:1px solid #dcd8cf;border-radius:10px;padding:12px;background:#fff;font:inherit}
+.media-setting input[type=file]{display:block;width:100%;margin:12px 0;font-size:12px}
+.media-setting .media-help{font-size:11px;color:var(--muted);margin:6px 0}
+.account-photo-preview{display:block;max-width:180px;max-height:180px;object-fit:cover;border-radius:14px;margin:12px auto;background:#f0ede6}
+.media-save{width:100%;margin-top:8px}
+.company-space-setting{margin-top:6px}
