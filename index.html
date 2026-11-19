@@ -92,6 +92,30 @@
         </form>
         <div id="account-panel" class="account-panel" hidden>
           <h3 id="account-welcome">Bienvenue !</h3><dl id="account-details"></dl>
+          <div class="account-media-settings">
+            <section class="media-setting" id="independent-photo-setting">
+              <h4>Photo de profil indépendant</h4>
+              <img id="independent-photo-preview" class="account-photo-preview" alt="Aperçu de votre photo de profil" hidden>
+              <p class="media-help">Photo JPG, PNG ou WebP · 3 Mo maximum</p>
+              <input type="file" id="independent-photo-file" accept="image/jpeg,image/png,image/webp">
+              <button type="button" class="button button-dark media-save" id="save-independent-photo">Enregistrer ma photo</button>
+              <p id="independent-photo-message" class="auth-message" role="status"></p>
+            </section>
+            <button type="button" class="button button-outline auth-submit" id="show-company-space" hidden>Ajouter mon espace entreprise</button>
+            <section class="media-setting company-space-setting" id="company-space-setting" hidden>
+              <h4>Mon espace entreprise</h4>
+              <label for="company-space-name">Nom de l'entreprise</label><input id="company-space-name" autocomplete="organization">
+              <label for="company-space-siret">SIRET (facultatif)</label><input id="company-space-siret" inputmode="numeric" maxlength="14">
+              <label for="company-space-contact">Nom du contact</label><input id="company-space-contact">
+              <label for="company-space-phone">Téléphone</label><input id="company-space-phone" type="tel">
+              <label for="company-space-city">Ville</label><input id="company-space-city">
+              <img id="company-photo-preview" class="account-photo-preview" alt="Aperçu de la photo d'entreprise" hidden>
+              <p class="media-help">Photo de l'activité, logo ou carte de visite · JPG, PNG ou WebP · 3 Mo maximum</p>
+              <input type="file" id="company-photo-file" accept="image/jpeg,image/png,image/webp">
+              <button type="button" class="button button-dark media-save" id="save-company-profile">Enregistrer mon espace entreprise</button>
+              <p id="company-profile-message" class="auth-message" role="status"></p>
+            </section>
+          </div>
           <button type="button" class="button button-outline auth-submit" id="logout-button">Se déconnecter</button>
         </div>
       </div>
