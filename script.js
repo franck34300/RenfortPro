@@ -67,6 +67,7 @@ function setAuthMode(mode){
 }
 document.querySelector('#show-signup')?.addEventListener('click',()=>setAuthMode('signup'));
 document.querySelector('#show-login')?.addEventListener('click',()=>setAuthMode('login'));
+document.querySelector('header a[href="#connexion"]')?.addEventListener('click',()=>setAuthMode('login'));
 accountType?.addEventListener('change',()=>{
   const isCompany=accountType.value==='entreprise';
   companyFields.hidden=!isCompany;
