@@ -77,32 +77,90 @@ accountType?.addEventListener('change',()=>{
 accountType?.dispatchEvent(new Event('change'));
 
 async function displayAccount(user){
-  signupForm.hidden=true;
-  loginForm.hidden=true;
-  accountPanel.hidden=false;
+  signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
   document.querySelector('#show-signup').classList.remove('active');
   document.querySelector('#show-login').classList.remove('active');
-  const {data,error}=await authClient.from('profiles').select('account_type,full_name,company_name,city,skills,description').eq('id',user.id).single();
-  if(error){
-    document.querySelector('#account-welcome').textContent='Connexion réussie. Votre profil est en cours de chargement.';
-    document.querySelector('#account-details').replaceChildren();
-    return;
-  }
+  const {data,error}=await authClient.from('profiles').select('account_type,full_name,company_name,city,skills,description,avatar_url,siret,phone').eq('id',user.id).single();
+  if(error){document.querySelector('#account-welcome').textContent='Connexion réussie. Votre profil est en cours de chargement.';document.querySelector('#account-details').replaceChildren();return;}
   const isCompany=data.account_type==='entreprise';
   document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.email)+' !';
-  const details=document.querySelector('#account-details');
-  details.replaceChildren();
-  const rows=[
-    ['Type de compte',isCompany?'Entreprise':'Indépendant'],
-    ...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),
-    ['Ville',data.city]
-  ];
-  rows.filter(row=>row[1]).forEach(([label,value])=>{
-    const dt=document.createElement('dt');dt.textContent=label;
-    const dd=document.createElement('dd');dd.textContent=value;
-    details.append(dt,dd);
+  const details=document.querySelector('#account-details');details.replaceChildren();
+  const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),['Ville',data.city]];
+  rows.filter(row=>row[1]).forEach(([label,value])=>{const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);});
+  const independentPhotoBox=document.querySelector('#independent-photo-setting');
+  independentPhotoBox.hidden=isCompany;
+  const avatarPreview=document.querySelector('#independent-photo-preview');
+  avatarPreview.hidden=!data.avatar_url;avatarPreview.src=data.avatar_url||'';
+  const companyBox=document.querySelector('#company-space-setting');
+  const showCompany=document.querySelector('#show-company-space');
+  const {data:company,error:companyError}=await authClient.from('company_profiles').select('company_name,siret,contact_name,phone,city,image_url').eq('user_id',user.id).maybeSingle();
+  if(companyError) console.warn('Company profile read:',companyError.message);
+  const companyExists=!!company;
+  showCompany.hidden=isCompany||companyExists;
+  companyBox.hidden=!(isCompany||companyExists);
+  document.querySelector('#company-space-name').value=company?.company_name||(isCompany?data.company_name:'')||'';
+  document.querySelector('#company-space-siret').value=company?.siret||(isCompany?data.siret:'')||'';
+  document.querySelector('#company-space-contact').value=company?.contact_name||(isCompany?data.full_name:'')||'';
+  document.querySelector('#company-space-phone').value=company?.phone||(isCompany?data.phone:'')||'';
+  document.querySelector('#company-space-city').value=company?.city||(isCompany?data.city:'')||'';
+  const companyPreview=document.querySelector('#company-photo-preview');
+  companyPreview.hidden=!company?.image_url;companyPreview.src=company?.image_url||'';
+  if(isCompany&&!companyExists){
+    const seed={user_id:user.id,company_name:data.company_name||'',siret:data.siret||'',contact_name:data.full_name||'',phone:data.phone||'',city:data.city||''};
+    if(seed.company_name){const {error:seedError}=await authClient.from('company_profiles').insert(seed);if(seedError)console.warn('Company profile initialization:',seedError.message);}
+  }
+}
+function validateImage(file,messageTarget){
+  if(!file){showAuthMessage(messageTarget,'Choisissez une image avant de continuer.',true);return false;}
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){showAuthMessage(messageTarget,'Format accepté : JPG, PNG ou WebP.',true);return false;}
+  if(file.size>3*1024*1024){showAuthMessage(messageTarget,'L’image ne doit pas dépasser 3 Mo.',true);return false;}
+  return true;
+}
+function previewImage(inputId,previewId){
+  document.querySelector('#'+inputId)?.addEventListener('change',e=>{
+    const file=e.target.files?.[0],preview=document.querySelector('#'+previewId);
+    if(!file){preview.hidden=true;return;}
+    if(!validateImage(file,null)){preview.hidden=true;return;}
+    preview.src=URL.createObjectURL(file);preview.hidden=false;
   });
 }
+previewImage('independent-photo-file','independent-photo-preview');
+previewImage('company-photo-file','company-photo-preview');
+async function uploadProfileImage(file,userId,kind){
+  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+  const path=userId+'/'+kind+'/'+Date.now()+'.'+ext;
+  const {error}=await authClient.storage.from('renfortpro-images').upload(path,file,{contentType:file.type,cacheControl:'3600'});
+  if(error)throw error;
+  return authClient.storage.from('renfortpro-images').getPublicUrl(path).data.publicUrl;
+}
+document.querySelector('#save-independent-photo')?.addEventListener('click',async()=>{
+  const user=(await authClient.auth.getUser()).data.user,file=document.querySelector('#independent-photo-file').files?.[0],msg=document.querySelector('#independent-photo-message'),btn=document.querySelector('#save-independent-photo');
+  if(!validateImage(file,msg))return;
+  btn.disabled=true;btn.textContent='Envoi…';showAuthMessage(msg,'');
+  try{const url=await uploadProfileImage(file,user.id,'independent');const {error}=await authClient.from('profiles').update({avatar_url:url}).eq('id',user.id);if(error)throw error;document.querySelector('#independent-photo-preview').src=url;showAuthMessage(msg,'Photo de profil enregistrée.');}
+  catch(error){showAuthMessage(msg,'Impossible d’enregistrer la photo : '+error.message,true);}
+  finally{btn.disabled=false;btn.textContent='Enregistrer ma photo';}
+});
+document.querySelector('#show-company-space')?.addEventListener('click',()=>{document.querySelector('#company-space-setting').hidden=false;document.querySelector('#show-company-space').hidden=true;});
+document.querySelector('#save-company-profile')?.addEventListener('click',async()=>{
+  const user=(await authClient.auth.getUser()).data.user,file=document.querySelector('#company-photo-file').files?.[0],msg=document.querySelector('#company-profile-message'),btn=document.querySelector('#save-company-profile');
+  const name=document.querySelector('#company-space-name').value.trim(),siret=document.querySelector('#company-space-siret').value.trim();
+  if(!name){showAuthMessage(msg,'Le nom de l’entreprise est obligatoire.',true);return;}
+  if(siret&&!/^\\d{14}$/.test(siret)){showAuthMessage(msg,'Le SIRET doit contenir 14 chiffres.',true);return;}
+  if(file&&!validateImage(file,msg))return;
+  btn.disabled=true;btn.textContent='Enregistrement…';showAuthMessage(msg,'');
+  try{
+    let imageUrl=document.querySelector('#company-photo-preview').src;
+    if(file)imageUrl=await uploadProfileImage(file,user.id,'company');
+    if(!imageUrl||imageUrl.startsWith('blob:'))imageUrl='';
+    const payload={user_id:user.id,company_name:name,siret,contact_name:document.querySelector('#company-space-contact').value.trim(),phone:document.querySelector('#company-space-phone').value.trim(),city:document.querySelector('#company-space-city').value.trim(),image_url:imageUrl,updated_at:new Date().toISOString()};
+    const {error}=await authClient.from('company_profiles').upsert(payload,{onConflict:'user_id'});if(error)throw error;
+    if(file)document.querySelector('#company-photo-preview').src=imageUrl;
+    showAuthMessage(msg,'Espace entreprise enregistré.');document.querySelector('#show-company-space').hidden=true;
+  }catch(error){showAuthMessage(msg,'Enregistrement impossible : '+error.message,true);}
+  finally{btn.disabled=false;btn.textContent='Enregistrer mon espace entreprise';}
+}
+);
 signupForm?.addEventListener('submit',async e=>{
   e.preventDefault();
   if(!authClient){showAuthMessage(signupMessage,'Le service de compte ne se charge pas. Actualisez la page.',true);return;}
