@@ -25,3 +25,23 @@
 .account-panel dd{margin:0;font-size:13px;color:var(--ink);overflow-wrap:anywhere}
 [hidden]{display:none!important}
 @media(max-width:600px){.auth-section{padding:36px 16px}.auth-card{padding:18px}.auth-heading h2{font-size:30px}.account-panel dl{grid-template-columns:1fr;gap:3px}.account-panel dd{margin-bottom:10px}}
+
+/* Illustration d'accueil RenfortPro */
+.renfort-visual{position:relative;overflow:hidden;background:radial-gradient(circle at 25% 20%,#f9fff8 0,#dfe9df 44%,#c5d5c7 100%);isolation:isolate}
+.renfort-visual:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;border:1px solid #19463118;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 35px #19463106,0 0 0 75px #19463105}
+.visual-orbit{position:absolute;border:1px dashed #24613e35;border-radius:50%;z-index:-1}
+.orbit-one{width:390px;height:390px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.orbit-two{width:280px;height:280px;left:50%;top:50%;transform:translate(-50%,-50%)}
+.visual-card{background:#fffdf9;border:1px solid #ffffffb5;border-radius:18px;box-shadow:0 18px 42px #173e2915}
+.visual-card-main{position:relative;width:min(78%,360px);padding:27px 24px;text-align:center;z-index:1}
+.visual-label{font-size:9px;font-weight:800;letter-spacing:.16em;color:#66806e}
+.visual-main-icon{margin:20px auto;width:72px;height:72px;display:grid;place-items:center;border-radius:22px;background:#194631;color:white;font-size:40px;box-shadow:0 10px 24px #19463126}
+.visual-card-main strong{display:block;font-family:Georgia,serif;font-size:21px;color:#1d3426}
+.visual-card-main small{display:block;color:#758079;margin-top:7px;font-size:11px}
+.visual-card-float{position:absolute;display:flex;align-items:center;gap:10px;padding:12px 15px;z-index:2}
+.visual-card-float strong{display:block;font-size:11px;color:#263a2d}
+.visual-card-float small{display:block;font-size:9px;color:#758079;margin-top:3px}
+.visual-mini-icon{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#e3eee5;color:#24613e;font-weight:800}
+.visual-float-top{right:5%;top:16%}
+.visual-float-bottom{left:5%;bottom:15%}
+@media(max-width:650px){.renfort-visual{min-height:190px}.visual-card-main{width:72%;padding:18px 12px}.visual-label{font-size:8px}.visual-main-icon{width:54px;height:54px;border-radius:17px;font-size:32px;margin:14px auto}.visual-card-main strong{font-size:16px}.visual-card-main small{font-size:9px}.visual-card-float{padding:9px 11px;gap:7px}.visual-card-float strong{font-size:9px}.visual-card-float small{font-size:8px}.visual-mini-icon{width:24px;height:24px}.visual-float-top{right:2%;top:8%}.visual-float-bottom{left:2%;bottom:8%}}
