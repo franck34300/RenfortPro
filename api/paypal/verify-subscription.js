@@ -1,4 +1,4 @@
-const { send, getUser, paypalToken } = require("./_shared");
+const { send, getUser, paypalToken } = require("../../lib/paypal");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return send(res, 405, { error: "Méthode non autorisée." });
