@@ -205,6 +205,45 @@ async function readProfile(user){
   const snap=await getDoc(ref);
   return snap.exists()?snap.data():null;
 }
+async function publishPublicProfile(uid){
+  const snap=await getDoc(doc(db,'profiles',uid));
+  if(!snap.exists())throw new Error('Profil privé introuvable.');
+  const data=snap.data();
+  if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
+  await setDoc(doc(db,'public_profiles',uid),{
+    full_name:data.full_name||'',skills:data.skills||'',description:data.description||'',
+    city:data.city||'',availability:data.availability||'À convenir',avatar_url:data.avatar_url||'',
+    updated_at:serverTimestamp()
+  });
+}
+async function refreshPublicProfileSetting(user,data){
+  const box=document.querySelector('#public-profile-setting');
+  if(!box||data.account_type!=='independant')return;
+  box.hidden=false;
+  try{
+    const snap=await getDoc(doc(db,'public_profiles',user.uid));
+    document.querySelector('#account-profile-public').checked=snap.exists();
+    document.querySelector('#public-profile-status').textContent=snap.exists()?'Votre fiche est visible dans l’annuaire.':'Votre fiche n’est pas publiée.';
+  }catch(error){
+    document.querySelector('#public-profile-status').textContent='Réglage de visibilité temporairement indisponible.';
+    console.warn('Public profile status:',error);
+  }
+}
+document.querySelector('#save-public-profile')?.addEventListener('click',async()=>{
+  const user=auth.currentUser,check=document.querySelector('#account-profile-public'),msg=document.querySelector('#public-profile-message'),btn=document.querySelector('#save-public-profile');
+  if(!user)return;
+  btn.disabled=true;btn.textContent='Enregistrement…';
+  try{
+    if(check.checked)await publishPublicProfile(user.uid);
+    else await deleteDoc(doc(db,'public_profiles',user.uid));
+    document.querySelector('#public-profile-status').textContent=check.checked?'Votre fiche est visible dans l’annuaire.':'Votre fiche n’est pas publiée.';
+    showAuthMessage(msg,check.checked?'Fiche publiée.':'Fiche retirée de l’annuaire.');
+    loadPublicProfiles();
+  }catch(error){
+    check.checked=!check.checked;
+    showAuthMessage(msg,'Modification impossible : '+error.message,true);
+  }finally{btn.disabled=false;btn.textContent='Enregistrer la visibilité';}
+});
 async function displayAccount(user){
   signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
   document.querySelector('#show-signup').classList.remove('active');
@@ -226,6 +265,7 @@ async function displayAccount(user){
     return;
   }
   const isCompany=data.account_type==='entreprise';
+  await refreshPublicProfileSetting(user,data);
   document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.displayName||user.email||'')+' !';
   const details=document.querySelector('#account-details');details.replaceChildren();
   const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),['Ville',data.city]];
@@ -281,6 +321,7 @@ document.querySelector('#save-independent-photo')?.addEventListener('click',asyn
   try{
     const url=await uploadProfileImage(file,user.uid,'independent');
     await updateDoc(doc(db,'profiles',user.uid),{avatar_url:url});
+    if(document.querySelector('#account-profile-public')?.checked)await publishPublicProfile(user.uid);
     const preview=document.querySelector('#independent-photo-preview');preview.src=url;preview.hidden=false;
     showAuthMessage(msg,'Photo de profil enregistrée.');
   }catch(error){showAuthMessage(msg,'Photo non enregistrée : '+error.message,true);}
@@ -325,11 +366,13 @@ async function createProfileForUser(user,metadata){
       city:metadata.city||'',
       skills:metadata.skills||'',
       description:metadata.description||'',
+      availability:metadata.availability||'À convenir',
       avatar_url:'',
       email:user.email||'',
       created_at:serverTimestamp()
     });
   }
+  if(metadata.account_type==='independant'&&metadata.public_profile)await publishPublicProfile(user.uid);
   const type=metadata.account_type||'';
   if(type==='entreprise'){
     const companyRef=doc(db,'company_profiles',user.uid);
@@ -358,7 +401,9 @@ signupForm?.addEventListener('submit',async e=>{
     phone:document.querySelector('#signup-phone').value.trim(),
     city:document.querySelector('#signup-city').value.trim(),
     skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
-    description:type==='independant'?document.querySelector('#independent-description').value.trim():''
+    description:type==='independant'?document.querySelector('#independent-description').value.trim():'',
+    availability:type==='independant'?document.querySelector('#independent-availability').value:'À convenir',
+    public_profile:type==='independant'?document.querySelector('#signup-profile-public').checked:false
   };
   try{
     const credential=await createUserWithEmailAndPassword(auth,document.querySelector('#signup-email').value.trim(),document.querySelector('#signup-password').value);
@@ -401,7 +446,9 @@ async function googleSignIn(){
         phone:document.querySelector('#signup-phone').value.trim(),
         city:document.querySelector('#signup-city').value.trim(),
         skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
-        description:type==='independant'?document.querySelector('#independent-description').value.trim():''
+        description:type==='independant'?document.querySelector('#independent-description').value.trim():'',
+        availability:type==='independant'?document.querySelector('#independent-availability').value:'À convenir',
+        public_profile:type==='independant'?document.querySelector('#signup-profile-public').checked:false
       };
       await createProfileForUser(credential.user,metadata);
     }
