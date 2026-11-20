@@ -96,6 +96,13 @@
         </form>
         <div id="account-panel" class="account-panel" hidden>
           <h3 id="account-welcome">Bienvenue !</h3><dl id="account-details"></dl>
+          <section class="media-setting" id="public-profile-setting" hidden>
+            <h4>Ma fiche dans l’annuaire</h4>
+            <p id="public-profile-status" class="media-help"></p>
+            <label class="profile-public-consent"><input type="checkbox" id="account-profile-public"> Autoriser l’affichage de ma fiche professionnelle</label>
+            <button type="button" class="button button-dark media-save" id="save-public-profile">Enregistrer la visibilité</button>
+            <p id="public-profile-message" class="auth-message" role="status"></p>
+          </section>
           <div class="account-media-settings">
             <section class="media-setting" id="independent-photo-setting">
               <h4>Photo de profil indépendant</h4>
