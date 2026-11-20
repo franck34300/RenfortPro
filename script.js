@@ -31,8 +31,8 @@ function renderPublicProfile(data){
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');
   card.dataset.tags.split('|').filter(Boolean).forEach(tag=>{const t=document.createElement('span');t.textContent=tag;tags.append(t);});
   info.append(name,job,location,tags);main.append(avatar,info);card.append(main);
-  const button=document.createElement('a');button.href='#connexion';button.className='button button-outline button-card';button.textContent='Voir le profil →';
-  button.addEventListener('click',e=>{e.preventDefault();openProfile(card);});card.append(button);
+  const button=document.createElement('button');button.type='button';button.className='button button-outline button-card';button.textContent='Voir le profil →';
+  button.addEventListener('click',()=>openProfile(card));card.append(button);
   gridAppend(card);
 }
 function gridAppend(card){document.querySelector('#profile-results')?.append(card);}
