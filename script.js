@@ -1,4 +1,43 @@
 const profileForm=document.querySelector('#profile-search');
+async function loadPublicProfiles(){
+  const grid=document.querySelector('#profile-results'),count=document.querySelector('#profile-count'),message=document.querySelector('#profile-directory-message');
+  try{
+    const snapshot=await getDocs(collection(db,'public_profiles'));
+    grid.replaceChildren();
+    snapshot.forEach(docSnap=>renderPublicProfile(docSnap.data()));
+    count.textContent=snapshot.size+' profil'+(snapshot.size>1?'s':'');
+    message.textContent=snapshot.empty?'Aucun indépendant n’a encore publié sa fiche.':snapshot.size+' fiche'+(snapshot.size>1?'s':'')+' professionnelle publiée'+(snapshot.size>1?'s':'')+'.';
+  }catch(error){
+    console.warn('Annuaire public inaccessible:',error);
+    grid.replaceChildren();count.textContent='Indisponible';
+    message.textContent='Annuaire temporairement indisponible.';
+  }
+}
+function renderPublicProfile(data){
+  const card=document.createElement('article');card.className='profile-card profile-card-horizontal';
+  const skills=data.skills||'Professionnel indépendant';
+  card.dataset.skill=skills;card.dataset.location=data.city||'';card.dataset.availability=data.availability||'À convenir';
+  card.dataset.experience=data.experience||'';card.dataset.rate=data.rate||'';card.dataset.description=data.description||'';
+  card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');card.dataset.avatar=data.avatar_url||'';
+  const main=document.createElement('div');main.className='profile-card-main';
+  const avatar=document.createElement('div');avatar.className='avatar avatar-1';
+  avatar.textContent=(data.full_name||'Indépendant').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  if(data.avatar_url){avatar.style.backgroundImage='url('+data.avatar_url+')';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';avatar.textContent='';}
+  const info=document.createElement('div');info.className='profile-card-info';
+  const name=document.createElement('h3');name.textContent=data.full_name||'Professionnel indépendant';
+  const job=document.createElement('p');job.className='profile-job';job.textContent=skills.split(/[,;|]/)[0].trim();
+  const location=document.createElement('span');location.className='location';location.textContent='⌖ '+(data.city||'Localisation non renseignée');
+  const tags=document.createElement('div');tags.className='tags profile-card-tags';
+  card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');
+  card.dataset.tags.split('|').filter(Boolean).forEach(tag=>{const t=document.createElement('span');t.textContent=tag;tags.append(t);});
+  info.append(name,job,location,tags);main.append(avatar,info);card.append(main);
+  const button=document.createElement('a');button.href='#connexion';button.className='button button-outline button-card';button.textContent='Voir le profil →';
+  button.addEventListener('click',e=>{e.preventDefault();openProfile(card);});card.append(button);
+  gridAppend(card);
+}
+function gridAppend(card){document.querySelector('#profile-results')?.append(card);}
+loadPublicProfiles();
+
 function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 const skillSynonyms={
   soudeur:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
@@ -47,7 +86,10 @@ function openProfile(card){
   const name=card.querySelector('h3')?.textContent||'Profil';
   document.querySelector('#profile-modal-name').textContent=name;
   document.querySelector('#profile-modal-job').textContent=card.querySelector('p')?.textContent||'';
-  document.querySelector('#profile-modal-avatar').textContent=card.querySelector('.avatar')?.textContent||'';
+  const modalAvatar=document.querySelector('#profile-modal-avatar');
+  modalAvatar.textContent=card.querySelector('.avatar')?.textContent||'';
+  modalAvatar.style.backgroundImage=card.dataset.avatar?'url('+card.dataset.avatar+')':'';
+  modalAvatar.style.backgroundSize='cover';modalAvatar.style.backgroundPosition='center';
   document.querySelector('#profile-modal-avatar').className='profile-modal-avatar avatar '+(card.querySelector('.avatar')?.classList[1]||'');
   document.querySelector('#profile-modal-location').textContent='⌖ '+(card.querySelector('.location')?.textContent||'Localisation non renseignée').replace('⌖','').trim();
   document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(card.dataset.availability||'À convenir');
@@ -58,7 +100,7 @@ function openProfile(card){
   (card.dataset.tags||'').split('|').filter(Boolean).forEach(tag=>{const span=document.createElement('span');span.textContent=tag;tags.append(span);});
   profileModal.hidden=false;document.body.classList.add('modal-open');
 }
-document.querySelectorAll('#profile-results .profile-card .button-card').forEach(button=>button.addEventListener('click',e=>{e.preventDefault();openProfile(button.closest('.profile-card'));}));
+
 const profileContact=document.querySelector('#profile-modal-contact');
 profileContact?.addEventListener('click',e=>{
   if(auth.currentUser){
@@ -83,7 +125,7 @@ import {
   signOut, onAuthStateChanged, updateProfile
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs, deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
