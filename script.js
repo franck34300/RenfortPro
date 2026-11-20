@@ -212,6 +212,7 @@ async function publishPublicProfile(uid){
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
   await setDoc(doc(db,'public_profiles',uid),{
     full_name:data.full_name||'',skills:data.skills||'',description:data.description||'',
+    experience:data.experience||'',rate:data.rate||'',
     city:data.city||'',availability:data.availability||'À convenir',avatar_url:data.avatar_url||'',
     updated_at:serverTimestamp()
   });
@@ -280,9 +281,11 @@ async function displayAccount(user){
   await refreshPublicProfileSetting(user,data);
   document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.displayName||user.email||'')+' !';
   const details=document.querySelector('#account-details');details.replaceChildren();
-  const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description]]),['Ville',data.city]];
+  const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description],['Expérience',data.experience],['Tarif indicatif',data.rate]]),['Ville',data.city]];
+  if(!isCompany){document.querySelector('#edit-independent-skills').value=data.skills||'';document.querySelector('#edit-independent-description').value=data.description||'';document.querySelector('#edit-independent-experience').value=data.experience||'';document.querySelector('#edit-independent-rate').value=data.rate||'';document.querySelector('#edit-independent-availability').value=data.availability||'À convenir';}
   rows.filter(row=>row[1]).forEach(([label,value])=>{const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);});
   document.querySelector('#independent-photo-setting').hidden=isCompany;
+  document.querySelector('#independent-profile-editor').hidden=isCompany;
   const avatarPreview=document.querySelector('#independent-photo-preview');
   avatarPreview.hidden=!data.avatar_url;avatarPreview.src=data.avatar_url||'';
   const companyRef=doc(db,'company_profiles',user.uid);
@@ -378,6 +381,7 @@ async function createProfileForUser(user,metadata){
       city:metadata.city||'',
       skills:metadata.skills||'',
       description:metadata.description||'',
+      experience:metadata.experience||'',rate:metadata.rate||'',
       availability:metadata.availability||'À convenir',
       avatar_url:'',
       email:user.email||'',
@@ -417,6 +421,8 @@ signupForm?.addEventListener('submit',async e=>{
     city:document.querySelector('#signup-city').value.trim(),
     skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
     description:type==='independant'?document.querySelector('#independent-description').value.trim():'',
+    experience:type==='independant'?document.querySelector('#independent-experience').value.trim():'',
+    rate:type==='independant'?document.querySelector('#independent-rate').value.trim():'',
     availability:type==='independant'?document.querySelector('#independent-availability').value:'À convenir',
     public_profile:type==='independant'?document.querySelector('#signup-profile-public').checked:false
   };
