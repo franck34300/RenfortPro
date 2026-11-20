@@ -36,7 +36,6 @@ function renderPublicProfile(data){
   gridAppend(card);
 }
 function gridAppend(card){document.querySelector('#profile-results')?.append(card);}
-loadPublicProfiles();
 
 function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 const skillSynonyms={
@@ -140,6 +139,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
+loadPublicProfiles();
 const googleProvider = new GoogleAuthProvider();
 
 const signupForm=document.querySelector('#signup-form');
