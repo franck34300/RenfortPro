@@ -244,6 +244,18 @@ document.querySelector('#save-public-profile')?.addEventListener('click',async()
     showAuthMessage(msg,'Modification impossible : '+error.message,true);
   }finally{btn.disabled=false;btn.textContent='Enregistrer la visibilité';}
 });
+document.querySelector('#save-independent-profile')?.addEventListener('click',async()=>{
+  const user=auth.currentUser,msg=document.querySelector('#independent-profile-message'),btn=document.querySelector('#save-independent-profile');
+  if(!user)return;
+  btn.disabled=true;btn.textContent='Enregistrement…';
+  try{
+    const updates={skills:document.querySelector('#edit-independent-skills').value.trim(),description:document.querySelector('#edit-independent-description').value.trim(),experience:document.querySelector('#edit-independent-experience').value.trim(),rate:document.querySelector('#edit-independent-rate').value.trim(),availability:document.querySelector('#edit-independent-availability').value};
+    await updateDoc(doc(db,'profiles',user.uid),updates);
+    if(document.querySelector('#account-profile-public')?.checked)await publishPublicProfile(user.uid);
+    showAuthMessage(msg,'Profil professionnel enregistré.');await loadPublicProfiles();
+  }catch(error){showAuthMessage(msg,'Enregistrement impossible : '+error.message,true);}
+  finally{btn.disabled=false;btn.textContent='Enregistrer mon profil professionnel';}
+});
 async function displayAccount(user){
   signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
   document.querySelector('#show-signup').classList.remove('active');
