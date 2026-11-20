@@ -372,7 +372,10 @@ async function createProfileForUser(user,metadata){
       created_at:serverTimestamp()
     });
   }
-  if(metadata.account_type==='independant'&&metadata.public_profile)await publishPublicProfile(user.uid);
+  if(metadata.account_type==='independant'&&metadata.public_profile){
+    try{await publishPublicProfile(user.uid);}
+    catch(error){console.warn('Fiche publique non publiée:',error);await updateDoc(ref,{public_profile:false});}
+  }
   const type=metadata.account_type||'';
   if(type==='entreprise'){
     const companyRef=doc(db,'company_profiles',user.uid);
