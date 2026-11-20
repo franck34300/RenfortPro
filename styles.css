@@ -90,3 +90,6 @@
 /* Consentement à la publication de la fiche indépendante */
 .profile-public-consent{display:flex!important;align-items:flex-start;gap:9px;line-height:1.5;margin:14px 0!important;font-size:12px!important;font-weight:500!important;color:#39443d}
 .profile-public-consent input[type="checkbox"]{width:auto!important;min-width:16px;margin:2px 0 0;flex:0 0 16px}
+
+.media-setting textarea,.media-setting select{width:100%;border:1px solid #dcd8cf;border-radius:10px;padding:12px;background:#fff;font:inherit;color:inherit;resize:vertical}
+.media-setting textarea{min-height:100px}
