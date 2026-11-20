@@ -28,7 +28,7 @@ function ensurePaymentBox() {
   paymentBox.innerHTML = `
     <p class="eyebrow">Accès entreprise</p>
     <h4 style="margin:0 0 8px;color:#194631;font-size:19px">Activez votre espace entreprise</h4>
-    <p style="margin:0 0 10px;line-height:1.5">Abonnement de 10 € par mois, renouvelé automatiquement selon les conditions du forfait PayPal. Le montant et les éventuelles taxes applicables sont affichés par PayPal avant votre validation.</p>
+    <p style="margin:0 0 10px;line-height:1.5">Abonnement de 10 € par mois, renouvelé automatiquement selon les conditions du forfait PayPal. Le montant et la périodicité du forfait sont présentés sur la page PayPal avant votre validation.</p>
     <p style="font-size:12px;color:#66716a;margin:0 0 14px">Vous pouvez continuer à utiliser votre espace indépendant gratuitement. Aucun accès entreprise ne sera ouvert avant confirmation de l'abonnement.</p>
     <button type="button" class="button button-dark" id="renfortpro-pay-button">Payer avec PayPal</button>
     <p id="renfortpro-pay-message" class="auth-message" role="status"></p>
