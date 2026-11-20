@@ -59,6 +59,16 @@ function openProfile(card){
   profileModal.hidden=false;document.body.classList.add('modal-open');
 }
 document.querySelectorAll('#profile-results .profile-card .button-card').forEach(button=>button.addEventListener('click',e=>{e.preventDefault();openProfile(button.closest('.profile-card'));}));
+const profileContact=document.querySelector('#profile-modal-contact');
+profileContact?.addEventListener('click',e=>{
+  if(auth.currentUser){
+    e.preventDefault();
+    profileContact.textContent='Profil de démonstration — contact bientôt disponible';
+  }else{
+    setAuthMode('login');
+    document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+  }
+});
 profileModal?.querySelectorAll('[data-close-profile]').forEach(el=>el.addEventListener('click',()=>{profileModal.hidden=true;document.body.classList.remove('modal-open');}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&profileModal&&!profileModal.hidden){profileModal.hidden=true;document.body.classList.remove('modal-open');}});
 const missionForm=document.querySelector('#mission-search');
@@ -110,7 +120,12 @@ function setAuthMode(mode){
 }
 document.querySelector('#show-signup')?.addEventListener('click',()=>setAuthMode('signup'));
 document.querySelector('#show-login')?.addEventListener('click',()=>setAuthMode('login'));
-document.querySelector('header a[href="#connexion"]')?.addEventListener('click',()=>setAuthMode('login'));
+const headerAccountLink=document.querySelector('header a[href="#connexion"]');
+headerAccountLink?.addEventListener('click',e=>{
+  e.preventDefault();
+  if(!auth.currentUser) setAuthMode('login');
+  document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+});
 accountType?.addEventListener('change',()=>{
   const isCompany=accountType.value==='entreprise';
   companyFields.hidden=!isCompany;
@@ -372,6 +387,8 @@ document.querySelector('#logout-button')?.addEventListener('click',async()=>{
   catch(error){showAuthMessage(loginMessage,'La déconnexion a échoué : '+error.message,true);}
 });
 onAuthStateChanged(auth,user=>{
+  if(headerAccountLink) headerAccountLink.textContent=user?'Mon compte':'Se connecter';
+  if(profileContact) profileContact.textContent=user?'Contacter (profil exemple)':'Créer un compte pour contacter →';
   if(user)displayAccount(user);
   else setAuthMode('login');
 });
