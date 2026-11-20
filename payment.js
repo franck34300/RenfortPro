@@ -16,6 +16,7 @@ const db = getFirestore(app);
 let currentProfile = null;
 let subscriptionActive = false;
 let paymentBox = null;
+window.__renfortproCompanyAccess = false;
 
 function ensurePaymentBox() {
   const panel = document.querySelector("#account-panel");
@@ -82,6 +83,7 @@ async function verifyAndDisplay(subscriptionId) {
     paypal_subscription_id: result.subscriptionId
   }, { merge: true });
   subscriptionActive = true;
+  window.__renfortproCompanyAccess = true;
   paymentBox.hidden = true;
   const companyBox = document.querySelector("#company-space-setting");
   const addCompanyButton = document.querySelector("#show-company-space");
@@ -119,6 +121,8 @@ onAuthStateChanged(auth, async user => {
     currentProfile = snap.exists() ? snap.data() : null;
     if (!currentProfile) return;
     const isCompany = currentProfile.account_type === "entreprise";
+    const companySnap = await getDoc(doc(db, "company_profiles", user.uid));
+    const hasCompanyProfile = companySnap.exists();
     const companyButton = document.querySelector("#show-company-space");
     const companyBox = document.querySelector("#company-space-setting");
     ensurePaymentBox();
@@ -136,20 +140,21 @@ onAuthStateChanged(auth, async user => {
       }, true);
     }
 
-    if (isCompany && companyBox) companyBox.hidden = true;
-    paymentBox.hidden = !isCompany;
+    if (companyBox) companyBox.hidden = true;
+    paymentBox.hidden = !(isCompany || hasCompanyProfile);
 
     const params = new URLSearchParams(window.location.search);
     const subscriptionId = params.get("subscription_id") || currentProfile.paypal_subscription_id;
     if (subscriptionId) {
       const result = await apiPost("/api/paypal/verify-subscription", { subscriptionId });
       subscriptionActive = result.active;
+      window.__renfortproCompanyAccess = result.active;
       if (result.active) {
         paymentBox.hidden = true;
-        if (isCompany && companyBox) companyBox.hidden = false;
+        if ((isCompany || hasCompanyProfile) && companyBox) companyBox.hidden = false;
         if (!isCompany && companyButton) companyButton.hidden = false;
       } else {
-        paymentBox.hidden = isCompany ? false : true;
+        paymentBox.hidden = (isCompany || hasCompanyProfile) ? false : true;
         if (companyBox) companyBox.hidden = true;
       }
     } else if (isCompany) {
@@ -161,6 +166,7 @@ onAuthStateChanged(auth, async user => {
     paymentBox.hidden = currentProfile?.account_type !== "entreprise";
     paymentMessage("Vérification de l'abonnement impossible : " + error.message, true);
     const companyBox = document.querySelector("#company-space-setting");
+    window.__renfortproCompanyAccess = false;
     if (companyBox) companyBox.hidden = true;
   }
 });
