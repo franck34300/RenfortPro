@@ -104,8 +104,8 @@ async function openProfile(card){
     modalAvatar.style.backgroundSize='cover';modalAvatar.style.backgroundPosition='center';
     document.querySelector('#profile-modal-location').textContent='⌖ '+(data.city||'Localisation non renseignée');
     document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(data.availability||'À convenir');
-    document.querySelector('#profile-modal-experience').textContent=data.experience||'Expérience non précisée';
-    document.querySelector('#profile-modal-rate').textContent=data.rate||'Tarif à convenir';
+    document.querySelector('#profile-modal-experience').textContent=data.experience?('Expérience : '+data.experience+(String(data.experience).match(/\bans?\b/i)?'':' ans')):'Expérience non précisée';
+    document.querySelector('#profile-modal-rate').textContent=data.rate?('Tarif horaire : '+data.rate+(String(data.rate).includes('€')?'':' €/heure')):'Tarif à convenir';
     document.querySelector('#profile-modal-date').textContent=data.available_date?('Disponible à partir du '+data.available_date):'Date de disponibilité non précisée';
     document.querySelector('#profile-modal-work-time').textContent=data.work_time||'Temps de travail à préciser';
     document.querySelector('#profile-modal-days').textContent=data.available_days||'Jours disponibles à préciser';
