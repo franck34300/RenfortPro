@@ -25,7 +25,7 @@ function renderPublicProfile(data){
   avatar.textContent=(data.full_name||'Indépendant').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
   if(data.avatar_url){avatar.style.backgroundImage='url('+data.avatar_url+')';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';avatar.textContent='';}
   const info=document.createElement('div');info.className='profile-card-info';
-  const name=document.createElement('h3');name.textContent=(data.full_name||'Professionnel indépendant').trim().split(/\\s+/)[0];
+  const name=document.createElement('h3');name.textContent=(data.full_name||'Professionnel indépendant').trim().split(/\s+/)[0];
   const job=document.createElement('p');job.className='profile-job';job.textContent=skills.split(/[,;|]/)[0].trim();
   const location=document.createElement('span');location.className='location';location.textContent='⌖ '+(data.city||'Localisation non renseignée');
   const tags=document.createElement('div');tags.className='tags profile-card-tags';
@@ -220,7 +220,7 @@ async function publishPublicProfile(uid){
   const data=snap.data();
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
   await setDoc(doc(db,'public_profiles',uid),{
-    full_name:(data.full_name||'').trim().split(/\\s+/)[0],skills:data.skills||'',description:data.description||'',
+    full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',description:data.description||'',
     experience:data.experience||'',rate:data.rate||'',
     city:data.city||'',availability:data.availability||'À convenir',available_date:data.available_date||'',work_time:data.work_time||'',available_days:data.available_days||'',available_hours:data.available_hours||'',mission_duration:data.mission_duration||'',mobility:data.mobility||'',permits:data.permits||'',equipment:data.equipment||'',avatar_url:data.avatar_url||'',
     updated_at:serverTimestamp()
