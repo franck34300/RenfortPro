@@ -436,6 +436,7 @@ signupForm?.addEventListener('submit',async e=>{
       try{
         const avatarUrl=await uploadProfileImage(photo,credential.user.uid,'independent');
         await updateDoc(doc(db,'profiles',credential.user.uid),{avatar_url:avatarUrl});
+        if(metadata.public_profile)await publishPublicProfile(credential.user.uid);
         showAuthMessage(signupMessage,'Compte créé et photo de profil enregistrée. Un e-mail de vérification vous a été envoyé.');
       }catch(imageError){
         showAuthMessage(signupMessage,'Compte créé, mais la photo n’a pas pu être envoyée : '+imageError.message,true);
