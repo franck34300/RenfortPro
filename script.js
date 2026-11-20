@@ -95,6 +95,14 @@ function openProfile(card){
   document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(card.dataset.availability||'À convenir');
   document.querySelector('#profile-modal-experience').textContent=card.dataset.experience||'Expérience non précisée';
   document.querySelector('#profile-modal-rate').textContent=card.dataset.rate||'Tarif à convenir';
+  document.querySelector('#profile-modal-date').textContent=card.dataset.availableDate?('Disponible à partir du '+card.dataset.availableDate):'Date de disponibilité non précisée';
+  document.querySelector('#profile-modal-work-time').textContent=card.dataset.workTime||'Temps de travail à préciser';
+  document.querySelector('#profile-modal-days').textContent=card.dataset.days||'Jours disponibles à préciser';
+  document.querySelector('#profile-modal-hours').textContent=card.dataset.hours||'Horaires à préciser';
+  document.querySelector('#profile-modal-duration').textContent=card.dataset.duration||'Durée souhaitée à préciser';
+  document.querySelector('#profile-modal-mobility').textContent=card.dataset.mobility||'Zone de déplacement à préciser';
+  document.querySelector('#profile-modal-permits').textContent=card.dataset.permits?'Permis, habilitations : '+card.dataset.permits:'Permis et habilitations non précisés';
+  document.querySelector('#profile-modal-equipment').textContent=card.dataset.equipment?'Matériel : '+card.dataset.equipment:'Matériel disponible non précisé';
   document.querySelector('#profile-modal-description').textContent=card.dataset.description||'Description non renseignée';
   const tags=document.querySelector('#profile-modal-tags');tags.replaceChildren();
   (card.dataset.tags||'').split('|').filter(Boolean).forEach(tag=>{const span=document.createElement('span');span.textContent=tag;tags.append(span);});
