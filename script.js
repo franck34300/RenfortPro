@@ -184,7 +184,7 @@ async function displayAccount(user){
   const showCompany=document.querySelector('#show-company-space');
   const companyBox=document.querySelector('#company-space-setting');
   showCompany.hidden=isCompany||companyExists;
-  companyBox.hidden=!(isCompany||companyExists);
+  companyBox.hidden=!(isCompany||companyExists)||window.__renfortproCompanyAccess!==true;
   document.querySelector('#company-space-name').value=company?.company_name||(isCompany?data.company_name:'')||'';
   document.querySelector('#company-space-siret').value=company?.siret||(isCompany?data.siret:'')||'';
   document.querySelector('#company-space-contact').value=company?.contact_name||(isCompany?data.full_name:'')||'';
