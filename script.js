@@ -512,12 +512,18 @@ loginForm?.addEventListener('submit',async e=>{
     showAuthMessage(loginMessage,'Connexion impossible : vérifiez votre adresse e-mail et votre mot de passe.',true);
   }finally{submit.disabled=false;submit.textContent='Me connecter';}
 });
+document.querySelector('#header-logout-button')?.addEventListener('click',async()=>{
+  try{await signOut(auth);setAuthMode('login');document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});}
+  catch(error){showAuthMessage(loginMessage,'La déconnexion a échoué : '+error.message,true);}
+});
 document.querySelector('#logout-button')?.addEventListener('click',async()=>{
   try{await signOut(auth);setAuthMode('login');}
   catch(error){showAuthMessage(loginMessage,'La déconnexion a échoué : '+error.message,true);}
 });
 onAuthStateChanged(auth,user=>{
   if(headerAccountLink) headerAccountLink.textContent=user?'Mon compte':'Se connecter';
+  const headerLogout=document.querySelector('#header-logout-button');
+  if(headerLogout) headerLogout.hidden=!user;
   if(profileContact) profileContact.textContent=user?'Contacter (profil exemple)':'Créer un compte pour contacter →';
   if(user)displayAccount(user);
   else setAuthMode('login');
