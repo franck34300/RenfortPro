@@ -103,8 +103,19 @@
             <label for="edit-independent-skills">Compétences / métiers</label><input id="edit-independent-skills" placeholder="Soudure, électricité, manutention…">
             <label for="edit-independent-description">Présentation</label><textarea id="edit-independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
             <label for="edit-independent-experience">Expérience professionnelle</label><input id="edit-independent-experience" placeholder="Ex. 8 ans d’expérience dans…">
+            <label for="edit-independent-phone">Téléphone professionnel</label><input id="edit-independent-phone" type="tel" autocomplete="tel" placeholder="06…">
+            <label for="edit-independent-email">E-mail professionnel</label><input id="edit-independent-email" type="email" autocomplete="email" placeholder="contact@…">
+            <label for="edit-independent-postal">Code postal</label><input id="edit-independent-postal" inputmode="numeric" maxlength="5" placeholder="34300">
             <label for="edit-independent-rate">Tarif indicatif (facultatif)</label><input id="edit-independent-rate" placeholder="Ex. 25 €/h, forfait, à convenir">
-            <label for="edit-independent-availability">Disponibilité</label><select id="edit-independent-availability"><option>Disponible rapidement</option><option>Cette semaine</option><option>À convenir</option></select>
+            <label for="edit-independent-availability">Disponibilité générale</label><select id="edit-independent-availability"><option>Disponible rapidement</option><option>Cette semaine</option><option>À partir d'une date</option><option>À convenir</option><option>Indisponible actuellement</option></select>
+            <label for="edit-independent-available-date">Date de disponibilité (si nécessaire)</label><input id="edit-independent-available-date" type="date">
+            <label for="edit-independent-work-time">Temps de travail souhaité</label><select id="edit-independent-work-time"><option value="">À préciser</option><option>Temps plein</option><option>Temps partiel</option><option>Ponctuel</option><option>Flexible</option></select>
+            <label for="edit-independent-days">Jours disponibles</label><input id="edit-independent-days" placeholder="Ex. lundi au vendredi, week-end…">
+            <label for="edit-independent-hours">Horaires disponibles</label><input id="edit-independent-hours" placeholder="Ex. 8h–17h, horaires décalés possibles">
+            <label for="edit-independent-duration">Durée de mission souhaitée</label><input id="edit-independent-duration" placeholder="Ex. journée, semaine, plusieurs mois">
+            <label for="edit-independent-mobility">Zone de déplacement</label><input id="edit-independent-mobility" placeholder="Ex. Agde, Béziers, 30 km autour">
+            <label for="edit-independent-permits">Permis / habilitations / certifications</label><textarea id="edit-independent-permits" rows="3" placeholder="Ex. permis B, CACES, habilitations…"></textarea>
+            <label for="edit-independent-equipment">Matériel ou équipement disponible</label><textarea id="edit-independent-equipment" rows="3" placeholder="Ex. outils, véhicule, équipement personnel…"></textarea>
             <button type="button" class="button button-dark media-save" id="save-independent-profile">Enregistrer mon profil professionnel</button><p id="independent-profile-message" class="auth-message" role="status"></p>
           </section>
           <section class="media-setting" id="public-profile-setting" hidden>
