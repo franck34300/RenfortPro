@@ -2,9 +2,9 @@ const profileForm=document.querySelector('#profile-search');
 async function loadPublicProfiles(){
   const grid=document.querySelector('#profile-results'),count=document.querySelector('#profile-count'),message=document.querySelector('#profile-directory-message');
   try{
-    const snapshot=await getDocs(collection(db,'public_profiles'));
+    const snapshot=await getDocs(collection(db,'public_directory'));
     grid.replaceChildren();
-    snapshot.forEach(docSnap=>renderPublicProfile(docSnap.data()));
+    snapshot.forEach(docSnap=>renderPublicProfile(docSnap.data(),docSnap.id));
     count.textContent=snapshot.size+' profil'+(snapshot.size>1?'s':'');
     message.textContent=snapshot.empty?'Aucun indépendant n’a encore publié sa fiche.':snapshot.size+' fiche'+(snapshot.size>1?'s':'')+' professionnelle publiée'+(snapshot.size>1?'s':'')+'.';
   }catch(error){
@@ -13,12 +13,10 @@ async function loadPublicProfiles(){
     message.textContent='Annuaire temporairement indisponible.';
   }
 }
-function renderPublicProfile(data){
-  const card=document.createElement('article');card.className='profile-card profile-card-horizontal';
+function renderPublicProfile(data,profileId){
+  const card=document.createElement('article');card.className='profile-card profile-card-horizontal';card.dataset.profileId=profileId;
   const skills=data.skills||'Professionnel indépendant';
-  card.dataset.skill=skills;card.dataset.location=data.city||'';card.dataset.availability=data.availability||'À convenir';
-  card.dataset.experience=data.experience||'';card.dataset.rate=data.rate||'';card.dataset.description=data.description||'';
-  card.dataset.availableDate=data.available_date||'';card.dataset.workTime=data.work_time||'';card.dataset.days=data.available_days||'';card.dataset.hours=data.available_hours||'';card.dataset.duration=data.mission_duration||'';card.dataset.mobility=data.mobility||'';card.dataset.permits=data.permits||'';card.dataset.equipment=data.equipment||'';
+  card.dataset.skill=skills;card.dataset.location=data.city||'';card.dataset.availability='';
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');card.dataset.avatar=data.avatar_url||'';
   const main=document.createElement('div');main.className='profile-card-main';
   const avatar=document.createElement('div');avatar.className='avatar avatar-1';
@@ -82,43 +80,57 @@ document.querySelector('#availability-filter')?.addEventListener('change',filter
 document.querySelector('#skill-filter')?.addEventListener('input',filterProfiles);
 document.querySelector('#location-filter')?.addEventListener('input',filterProfiles);
 const profileModal=document.querySelector('#profile-modal');
-function openProfile(card){
-  const name=card.querySelector('h3')?.textContent||'Profil';
-  document.querySelector('#profile-modal-name').textContent=name;
-  document.querySelector('#profile-modal-job').textContent=card.querySelector('p')?.textContent||'';
-  const modalAvatar=document.querySelector('#profile-modal-avatar');
-  modalAvatar.textContent=card.querySelector('.avatar')?.textContent||'';
-  modalAvatar.style.backgroundImage=card.dataset.avatar?'url('+card.dataset.avatar+')':'';
-  modalAvatar.style.backgroundSize='cover';modalAvatar.style.backgroundPosition='center';
-  document.querySelector('#profile-modal-avatar').className='profile-modal-avatar avatar '+(card.querySelector('.avatar')?.classList[1]||'');
-  document.querySelector('#profile-modal-location').textContent='⌖ '+(card.querySelector('.location')?.textContent||'Localisation non renseignée').replace('⌖','').trim();
-  document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(card.dataset.availability||'À convenir');
-  document.querySelector('#profile-modal-experience').textContent=card.dataset.experience||'Expérience non précisée';
-  document.querySelector('#profile-modal-rate').textContent=card.dataset.rate||'Tarif à convenir';
-  document.querySelector('#profile-modal-date').textContent=card.dataset.availableDate?('Disponible à partir du '+card.dataset.availableDate):'Date de disponibilité non précisée';
-  document.querySelector('#profile-modal-work-time').textContent=card.dataset.workTime||'Temps de travail à préciser';
-  document.querySelector('#profile-modal-days').textContent=card.dataset.days||'Jours disponibles à préciser';
-  document.querySelector('#profile-modal-hours').textContent=card.dataset.hours||'Horaires à préciser';
-  document.querySelector('#profile-modal-duration').textContent=card.dataset.duration||'Durée souhaitée à préciser';
-  document.querySelector('#profile-modal-mobility').textContent=card.dataset.mobility||'Zone de déplacement à préciser';
-  document.querySelector('#profile-modal-permits').textContent=card.dataset.permits?'Permis, habilitations : '+card.dataset.permits:'Permis et habilitations non précisés';
-  document.querySelector('#profile-modal-equipment').textContent=card.dataset.equipment?'Matériel : '+card.dataset.equipment:'Matériel disponible non précisé';
-  document.querySelector('#profile-modal-description').textContent=card.dataset.description||'Description non renseignée';
-  const tags=document.querySelector('#profile-modal-tags');tags.replaceChildren();
-  (card.dataset.tags||'').split('|').filter(Boolean).forEach(tag=>{const span=document.createElement('span');span.textContent=tag;tags.append(span);});
-  profileModal.hidden=false;document.body.classList.add('modal-open');
+async function openProfile(card){
+  const user=auth.currentUser;
+  if(!user){
+    setAuthMode('login');
+    document.querySelector('#profile-directory-message').textContent='Connectez-vous à un compte entreprise abonné pour consulter les profils complets.';
+    document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+    return;
+  }
+  const message=document.querySelector('#profile-directory-message');
+  message.textContent='Vérification de votre accès et chargement du profil…';
+  try{
+    const token=await user.getIdToken();
+    const response=await fetch('/api/profiles/'+encodeURIComponent(card.dataset.profileId),{headers:{Authorization:'Bearer '+token}});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.error||'Accès au profil refusé.');
+    const data=result.profile||{};
+    document.querySelector('#profile-modal-name').textContent=data.full_name||card.querySelector('h3')?.textContent||'Profil';
+    document.querySelector('#profile-modal-job').textContent=data.skills||'';
+    const modalAvatar=document.querySelector('#profile-modal-avatar');
+    modalAvatar.textContent='';
+    modalAvatar.style.backgroundImage=data.avatar_url?'url('+data.avatar_url+')':'';
+    modalAvatar.style.backgroundSize='cover';modalAvatar.style.backgroundPosition='center';
+    document.querySelector('#profile-modal-location').textContent='⌖ '+(data.city||'Localisation non renseignée');
+    document.querySelector('#profile-modal-availability').textContent='Disponibilité : '+(data.availability||'À convenir');
+    document.querySelector('#profile-modal-experience').textContent=data.experience||'Expérience non précisée';
+    document.querySelector('#profile-modal-rate').textContent=data.rate||'Tarif à convenir';
+    document.querySelector('#profile-modal-date').textContent=data.available_date?('Disponible à partir du '+data.available_date):'Date de disponibilité non précisée';
+    document.querySelector('#profile-modal-work-time').textContent=data.work_time||'Temps de travail à préciser';
+    document.querySelector('#profile-modal-days').textContent=data.available_days||'Jours disponibles à préciser';
+    document.querySelector('#profile-modal-hours').textContent=data.available_hours||'Horaires à préciser';
+    document.querySelector('#profile-modal-duration').textContent=data.mission_duration||'Durée souhaitée à préciser';
+    document.querySelector('#profile-modal-mobility').textContent=data.mobility||'Zone de déplacement à préciser';
+    document.querySelector('#profile-modal-permits').textContent=data.permits?'Permis, habilitations : '+data.permits:'Permis et habilitations non précisés';
+    document.querySelector('#profile-modal-equipment').textContent=data.equipment?'Matériel : '+data.equipment:'Matériel disponible non précisé';
+    document.querySelector('#profile-modal-description').textContent=data.description||'Description non renseignée';
+    const tags=document.querySelector('#profile-modal-tags');tags.replaceChildren();
+    (data.skills||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(tag=>{const span=document.createElement('span');span.textContent=tag;tags.append(span);});
+    const contact=document.querySelector('#profile-modal-contact');
+    contact.textContent='Téléphone : '+(data.phone||'Non renseigné')+' · E-mail : '+(data.email||'Non renseigné');
+    contact.href=data.email?'mailto:'+data.email:'#';
+    if(data.phone)contact.title='Téléphone : '+data.phone;
+    profileModal.hidden=false;document.body.classList.add('modal-open');
+    message.textContent='';
+  }catch(error){
+    message.textContent=error.message;
+    if(/abonn|entreprise|connexion|accès/i.test(error.message)){
+      document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+    }
+  }
 }
 
-const profileContact=document.querySelector('#profile-modal-contact');
-profileContact?.addEventListener('click',e=>{
-  if(auth.currentUser){
-    e.preventDefault();
-    profileContact.textContent='Profil de démonstration — contact bientôt disponible';
-  }else{
-    setAuthMode('login');
-    document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
-  }
-});
 profileModal?.querySelectorAll('[data-close-profile]').forEach(el=>el.addEventListener('click',()=>{profileModal.hidden=true;document.body.classList.remove('modal-open');}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&profileModal&&!profileModal.hidden){profileModal.hidden=true;document.body.classList.remove('modal-open');}});
 const missionForm=document.querySelector('#mission-search');
@@ -219,11 +231,9 @@ async function publishPublicProfile(uid){
   if(!snap.exists())throw new Error('Profil privé introuvable.');
   const data=snap.data();
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
-  await setDoc(doc(db,'public_profiles',uid),{
-    full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',description:data.description||'',
-    experience:data.experience||'',rate:data.rate||'',
-    city:data.city||'',availability:data.availability||'À convenir',available_date:data.available_date||'',work_time:data.work_time||'',available_days:data.available_days||'',available_hours:data.available_hours||'',mission_duration:data.mission_duration||'',mobility:data.mobility||'',permits:data.permits||'',equipment:data.equipment||'',avatar_url:data.avatar_url||'',
-    updated_at:serverTimestamp()
+  await setDoc(doc(db,'public_directory',uid),{
+    full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',
+    city:data.city||'',avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
   });
 }
 async function refreshPublicProfileSetting(user,data){
@@ -231,7 +241,7 @@ async function refreshPublicProfileSetting(user,data){
   if(!box||data.account_type!=='independant')return;
   box.hidden=false;
   try{
-    const snap=await getDoc(doc(db,'public_profiles',user.uid));
+    const snap=await getDoc(doc(db,'public_directory',user.uid));
     document.querySelector('#account-profile-public').checked=snap.exists();
     document.querySelector('#public-profile-status').textContent=snap.exists()?'Votre fiche est visible dans l’annuaire.':'Votre fiche n’est pas publiée.';
   }catch(error){
@@ -245,7 +255,7 @@ document.querySelector('#save-public-profile')?.addEventListener('click',async()
   btn.disabled=true;btn.textContent='Enregistrement…';
   try{
     if(check.checked)await publishPublicProfile(user.uid);
-    else await deleteDoc(doc(db,'public_profiles',user.uid));
+    else await deleteDoc(doc(db,'public_directory',user.uid));
     document.querySelector('#public-profile-status').textContent=check.checked?'Votre fiche est visible dans l’annuaire.':'Votre fiche n’est pas publiée.';
     showAuthMessage(msg,check.checked?'Fiche publiée.':'Fiche retirée de l’annuaire.');
     loadPublicProfiles();
