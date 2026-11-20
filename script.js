@@ -18,13 +18,14 @@ function renderPublicProfile(data){
   const skills=data.skills||'Professionnel indépendant';
   card.dataset.skill=skills;card.dataset.location=data.city||'';card.dataset.availability=data.availability||'À convenir';
   card.dataset.experience=data.experience||'';card.dataset.rate=data.rate||'';card.dataset.description=data.description||'';
+  card.dataset.availableDate=data.available_date||'';card.dataset.workTime=data.work_time||'';card.dataset.days=data.available_days||'';card.dataset.hours=data.available_hours||'';card.dataset.duration=data.mission_duration||'';card.dataset.mobility=data.mobility||'';card.dataset.permits=data.permits||'';card.dataset.equipment=data.equipment||'';
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');card.dataset.avatar=data.avatar_url||'';
   const main=document.createElement('div');main.className='profile-card-main';
   const avatar=document.createElement('div');avatar.className='avatar avatar-1';
   avatar.textContent=(data.full_name||'Indépendant').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
   if(data.avatar_url){avatar.style.backgroundImage='url('+data.avatar_url+')';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';avatar.textContent='';}
   const info=document.createElement('div');info.className='profile-card-info';
-  const name=document.createElement('h3');name.textContent=data.full_name||'Professionnel indépendant';
+  const name=document.createElement('h3');name.textContent=(data.full_name||'Professionnel indépendant').trim().split(/\\s+/)[0];
   const job=document.createElement('p');job.className='profile-job';job.textContent=skills.split(/[,;|]/)[0].trim();
   const location=document.createElement('span');location.className='location';location.textContent='⌖ '+(data.city||'Localisation non renseignée');
   const tags=document.createElement('div');tags.className='tags profile-card-tags';
@@ -211,9 +212,9 @@ async function publishPublicProfile(uid){
   const data=snap.data();
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
   await setDoc(doc(db,'public_profiles',uid),{
-    full_name:data.full_name||'',skills:data.skills||'',description:data.description||'',
+    full_name:(data.full_name||'').trim().split(/\\s+/)[0],skills:data.skills||'',description:data.description||'',
     experience:data.experience||'',rate:data.rate||'',
-    city:data.city||'',availability:data.availability||'À convenir',avatar_url:data.avatar_url||'',
+    city:data.city||'',availability:data.availability||'À convenir',available_date:data.available_date||'',work_time:data.work_time||'',available_days:data.available_days||'',available_hours:data.available_hours||'',mission_duration:data.mission_duration||'',mobility:data.mobility||'',permits:data.permits||'',equipment:data.equipment||'',avatar_url:data.avatar_url||'',
     updated_at:serverTimestamp()
   });
 }
@@ -250,7 +251,7 @@ document.querySelector('#save-independent-profile')?.addEventListener('click',as
   if(!user)return;
   btn.disabled=true;btn.textContent='Enregistrement…';
   try{
-    const updates={skills:document.querySelector('#edit-independent-skills').value.trim(),description:document.querySelector('#edit-independent-description').value.trim(),experience:document.querySelector('#edit-independent-experience').value.trim(),rate:document.querySelector('#edit-independent-rate').value.trim(),availability:document.querySelector('#edit-independent-availability').value};
+    const updates={skills:document.querySelector('#edit-independent-skills').value.trim(),description:document.querySelector('#edit-independent-description').value.trim(),experience:document.querySelector('#edit-independent-experience').value.trim(),rate:document.querySelector('#edit-independent-rate').value.trim(),phone:document.querySelector('#edit-independent-phone').value.trim(),email:document.querySelector('#edit-independent-email').value.trim(),postal_code:document.querySelector('#edit-independent-postal').value.trim(),availability:document.querySelector('#edit-independent-availability').value,available_date:document.querySelector('#edit-independent-available-date').value,work_time:document.querySelector('#edit-independent-work-time').value,available_days:document.querySelector('#edit-independent-days').value.trim(),available_hours:document.querySelector('#edit-independent-hours').value.trim(),mission_duration:document.querySelector('#edit-independent-duration').value.trim(),mobility:document.querySelector('#edit-independent-mobility').value.trim(),permits:document.querySelector('#edit-independent-permits').value.trim(),equipment:document.querySelector('#edit-independent-equipment').value.trim()};
     await updateDoc(doc(db,'profiles',user.uid),updates);
     if(document.querySelector('#account-profile-public')?.checked)await publishPublicProfile(user.uid);
     showAuthMessage(msg,'Profil professionnel enregistré.');await loadPublicProfiles();
@@ -282,7 +283,7 @@ async function displayAccount(user){
   document.querySelector('#account-welcome').textContent='Bienvenue '+(data.full_name||user.displayName||user.email||'')+' !';
   const details=document.querySelector('#account-details');details.replaceChildren();
   const rows=[['Type de compte',isCompany?'Entreprise':'Indépendant'],...(isCompany?[['Entreprise',data.company_name]]:[['Compétences',data.skills],['Présentation',data.description],['Expérience',data.experience],['Tarif indicatif',data.rate]]),['Ville',data.city]];
-  if(!isCompany){document.querySelector('#edit-independent-skills').value=data.skills||'';document.querySelector('#edit-independent-description').value=data.description||'';document.querySelector('#edit-independent-experience').value=data.experience||'';document.querySelector('#edit-independent-rate').value=data.rate||'';document.querySelector('#edit-independent-availability').value=data.availability||'À convenir';}
+  if(!isCompany){document.querySelector('#edit-independent-skills').value=data.skills||'';document.querySelector('#edit-independent-description').value=data.description||'';document.querySelector('#edit-independent-experience').value=data.experience||'';document.querySelector('#edit-independent-rate').value=data.rate||'';document.querySelector('#edit-independent-phone').value=data.phone||'';document.querySelector('#edit-independent-email').value=data.email||user.email||'';document.querySelector('#edit-independent-postal').value=data.postal_code||'';document.querySelector('#edit-independent-availability').value=data.availability||'À convenir';document.querySelector('#edit-independent-available-date').value=data.available_date||'';document.querySelector('#edit-independent-work-time').value=data.work_time||'';document.querySelector('#edit-independent-days').value=data.available_days||'';document.querySelector('#edit-independent-hours').value=data.available_hours||'';document.querySelector('#edit-independent-duration').value=data.mission_duration||'';document.querySelector('#edit-independent-mobility').value=data.mobility||'';document.querySelector('#edit-independent-permits').value=data.permits||'';document.querySelector('#edit-independent-equipment').value=data.equipment||'';}
   rows.filter(row=>row[1]).forEach(([label,value])=>{const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);});
   document.querySelector('#independent-photo-setting').hidden=isCompany;
   document.querySelector('#independent-profile-editor').hidden=isCompany;
