@@ -544,19 +544,19 @@ onAuthStateChanged(auth,user=>{
   else setAuthMode('login');
 });
 
-// Rotation des annonces du bandeau publicitaire (60 secondes)
+// Rotation des annonces de démonstration du bandeau publicitaire (60 secondes)
 const rotatingAds=[
-  {visual:'OUTILS & ÉQUIPEMENT',subtitle:'Les professionnels bien équipés',label:'ANNONCE DÉMO · OUTILLAGE',title:'Le bon matériel pour vos chantiers.',description:'Découvrez des équipements et solutions conçus pour les métiers du terrain.',button:'Découvrir',url:'#partenaires',tone:'tools'},
-  {visual:'SERVICES AUX ENTREPRISES',subtitle:'Votre activité au quotidien',label:'ANNONCE DÉMO · SERVICES',title:'Simplifiez votre activité professionnelle.',description:'Un service, une solution ou un partenaire pour accompagner votre entreprise.',button:'En savoir plus',url:'#partenaires',tone:'services'},
-  {visual:'RECRUTEMENT & OPPORTUNITÉS',subtitle:'Faites connaître vos besoins',label:'ANNONCE DÉMO · RECRUTEMENT',title:'Vous recherchez de nouveaux talents ?',description:'Présentez votre entreprise et faites connaître vos opportunités aux visiteurs de RenfortPro.',button:'Voir les possibilités',url:'#partenaires',tone:'jobs'}
+  {visual:'Tech Métal',icon:'⚙️',subtitle:'Solutions industrielles',label:'ANNONCE DE DÉMONSTRATION',title:'Votre partenaire pour tous vos projets.',description:'Soudure, fabrication et solutions métalliques pour les professionnels.',button:'Découvrir notre site',url:'#partenaires',tone:'tools'},
+  {visual:'EcoBat',icon:'🏡',subtitle:'Construire durable, pour demain',label:'ANNONCE DE DÉMONSTRATION',title:'Construire durable, pour demain.',description:'Des solutions de construction et de rénovation pensées pour vos projets.',button:'En savoir plus',url:'#partenaires',tone:'ecobat'},
+  {visual:'JardiPlus',icon:'🌿',subtitle:'Aménagement & entretien paysager',label:'ANNONCE DE DÉMONSTRATION',title:'Donnez vie à vos espaces.',description:'Création, entretien et aménagement de vos extérieurs.',button:'Voir nos réalisations',url:'#partenaires',tone:'jardiplus'}
 ];
 (function initAdRotation(){
   const panel=document.querySelector('#advertisement-panel');if(!panel)return;
-  const image=document.querySelector('#advertisement-image'),visual=document.querySelector('#advertisement-visual-title'),subtitle=document.querySelector('#advertisement-visual-subtitle'),label=document.querySelector('#advertisement-label'),title=document.querySelector('#advertisement-title'),description=document.querySelector('#advertisement-description'),link=document.querySelector('#advertisement-link'),counter=document.querySelector('#advertisement-rotation');
+  const image=document.querySelector('#advertisement-image'),icon=document.querySelector('#advertisement-demo-icon'),visual=document.querySelector('#advertisement-visual-title'),subtitle=document.querySelector('#advertisement-visual-subtitle'),label=document.querySelector('#advertisement-label'),title=document.querySelector('#advertisement-title'),description=document.querySelector('#advertisement-description'),link=document.querySelector('#advertisement-link'),counter=document.querySelector('#advertisement-rotation');
   let index=0;
   function showAd(next){
     index=next%rotatingAds.length;const ad=rotatingAds[index];panel.classList.add('ad-changing');
-    window.setTimeout(()=>{visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
+    window.setTimeout(()=>{icon.textContent=ad.icon;visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
   }
   showAd(0);window.setInterval(()=>showAd(index+1),60000);
 })();
