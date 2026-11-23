@@ -307,8 +307,8 @@ async function loadAdminDashboard(user){
       const response=await fetch('/api/admin/stats',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
       const result=await response.json();
       if(response.status===403||response.status===401){panel.hidden=true;return;}
-      if(!response.ok)throw new Error(result.error||'Statistiques indisponibles.');
       panel.hidden=false;
+      if(!response.ok)throw new Error(result.error||'Statistiques indisponibles.');
       document.querySelector('#admin-independent-count').textContent=Number(result.independents||0).toLocaleString('fr-FR');
       document.querySelector('#admin-company-count').textContent=Number(result.companies||0).toLocaleString('fr-FR');
       document.querySelector('#admin-month-count').textContent=Number(result.newThisMonth||0).toLocaleString('fr-FR');
