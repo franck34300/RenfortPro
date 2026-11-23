@@ -127,6 +127,9 @@ async function openProfile(card){
     message.textContent=error.message;
     if(/abonn|entreprise|connexion|accès/i.test(error.message)){
       document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+      if(/abonn|entreprise|accès/i.test(error.message)){
+        window.__renfortproShowPayment?.();
+      }
     }
   }
 }
