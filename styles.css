@@ -93,3 +93,10 @@
 
 .media-setting textarea,.media-setting select{width:100%;border:1px solid #dcd8cf;border-radius:10px;padding:12px;background:#fff;font:inherit;color:inherit;resize:vertical}
 .media-setting textarea{min-height:100px}
+
+/* Inscription séparée selon le type de compte */
+.signup-type-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 22px;padding:6px;background:#f0ede6;border-radius:14px}
+.signup-type-button{padding:14px 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s}
+.signup-type-button.active{background:#fffdf9;color:var(--green);border-color:#d8e2d8;box-shadow:0 3px 10px #2035290d}
+.signup-type-button:hover{border-color:#b7c9bb}
+.signup-common-fields{margin-top:18px;padding-top:6px;border-top:1px solid var(--line)}
