@@ -102,6 +102,25 @@
         </form>
         <div id="account-panel" class="account-panel" hidden>
           <h3 id="account-welcome">Bienvenue !</h3><dl id="account-details"></dl>
+          <section class="media-setting admin-dashboard" id="admin-dashboard" hidden>
+            <div class="admin-dashboard-heading">
+              <div><p class="eyebrow">Administration privée</p><h4>Suivi de RenfortPro</h4></div>
+              <span class="admin-lock">🔒 Accès administrateur</span>
+            </div>
+            <p class="admin-intro">Les inscriptions des indépendants et des entreprises, en un seul endroit.</p>
+            <div class="admin-stat-grid">
+              <article class="admin-stat-card"><span class="admin-stat-icon">👷</span><strong id="admin-independent-count">—</strong><span>Indépendants inscrits</span></article>
+              <article class="admin-stat-card"><span class="admin-stat-icon">🏢</span><strong id="admin-company-count">—</strong><span>Entreprises inscrites</span></article>
+              <article class="admin-stat-card"><span class="admin-stat-icon">＋</span><strong id="admin-month-count">—</strong><span>Nouvelles inscriptions ce mois</span></article>
+            </div>
+            <div class="admin-chart-card">
+              <div class="admin-chart-heading"><div><strong>Progression des inscriptions</strong><small>Six derniers mois</small></div><span id="admin-total-count">— comptes au total</span></div>
+              <div class="admin-chart" id="admin-monthly-chart" aria-label="Graphique des inscriptions sur les six derniers mois"></div>
+            </div>
+            <div class="admin-recent-card"><strong>Dernières inscriptions</strong><div id="admin-recent-list"><p>Chargement…</p></div></div>
+            <p class="admin-status" id="admin-dashboard-status" role="status"></p>
+            <button type="button" class="button button-outline media-save" id="admin-refresh-button">Actualiser les statistiques</button>
+          </section>
           <section class="media-setting" id="independent-profile-editor" hidden>
             <h4>Mon profil professionnel</h4>
             <label for="edit-independent-skills">Compétences / métiers</label><input id="edit-independent-skills" placeholder="Soudure, électricité, manutention…">
