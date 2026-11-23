@@ -196,7 +196,7 @@ function updateSignupType(){
   document.querySelector('#company-name').required=isCompany;
   document.querySelector('#independent-skills').required=!isCompany;
   document.querySelector('#signup-form-title').textContent=isCompany?'Créer mon espace entreprise':'Créer mon espace indépendant';
-  document.querySelector('.company-contact-label').hidden=!isCompany;
+  document.querySelector('#signup-contact-label').textContent=isCompany?'Nom du responsable / contact':'Nom et prénom';
   document.querySelector('#signup-form button[type="submit"]').textContent=isCompany?'Créer mon compte entreprise':'Créer mon compte indépendant';
   document.querySelectorAll('.signup-type-button').forEach(button=>{
     const active=button.dataset.accountType===accountType.value;
