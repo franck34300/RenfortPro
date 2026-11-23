@@ -112,3 +112,11 @@
 .advertisement-content>p:not(.eyebrow){color:#59645b;font-size:13px;line-height:1.55;margin:0 0 18px}
 .advertisement-content .button{align-self:flex-start}
 @media(max-width:650px){.advertisement-panel{min-height:250px;border-radius:20px}.advertisement-image{min-height:110px}.advertisement-content{padding:18px}.advertisement-content h2{font-size:24px}}
+
+/* Rotation et transitions du bandeau publicitaire */
+.advertisement-panel{transition:opacity .25s ease,transform .25s ease}
+.advertisement-panel.ad-changing{opacity:.45;transform:translateY(3px)}
+.advertisement-image[data-tone="tools"]{background:linear-gradient(135deg,#dfe8de,#c7d8ca)}
+.advertisement-image[data-tone="services"]{background:linear-gradient(135deg,#e8e2d8,#d2c5b4)}
+.advertisement-image[data-tone="jobs"]{background:linear-gradient(135deg,#dfe5ed,#c4d0df)}
+.advertisement-rotation{display:block;text-align:right;margin-top:12px;font-size:10px;color:#8a948b}
