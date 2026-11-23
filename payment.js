@@ -38,6 +38,14 @@ function ensurePaymentBox() {
   paymentBox.querySelector("#renfortpro-pay-button").addEventListener("click", startSubscription);
 }
 
+// Expose a safe UI helper so profile-access refusals can reveal the subscription panel.
+window.__renfortproShowPayment = function() {
+  ensurePaymentBox();
+  if (!paymentBox) return;
+  paymentBox.hidden = false;
+  paymentBox.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
 function paymentMessage(message, error = false) {
   const target = document.querySelector("#renfortpro-pay-message");
   if (target) {
