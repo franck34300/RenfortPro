@@ -129,3 +129,11 @@
 .advertisement-image[data-tone="jardiplus"]{background:linear-gradient(120deg,#e3eddd,#b7d2b0 55%,#6f9b70);color:#20523a}
 .advertisement-image[data-tone="tools"] span#advertisement-visual-title,.advertisement-image[data-tone="ecobat"] span#advertisement-visual-title,.advertisement-image[data-tone="jardiplus"] span#advertisement-visual-title{font-size:clamp(18px,2.2vw,26px);letter-spacing:0;font-weight:800}
 .advertisement-image[data-tone="tools"] small,.advertisement-image[data-tone="ecobat"] small,.advertisement-image[data-tone="jardiplus"] small{font-size:12px;font-weight:600}
+
+/* Photos réelles dans le bandeau de démonstration */
+.advertisement-image{background-size:cover!important;background-position:center!important;position:relative!important}
+.advertisement-image:before{border:0!important;background:linear-gradient(0deg,rgba(8,20,16,.38),transparent 60%);inset:0!important;border-radius:0!important}
+.advertisement-demo-icon{display:none!important}
+.advertisement-image span#advertisement-visual-title,.advertisement-image small#advertisement-visual-subtitle{color:#fff!important;text-shadow:0 2px 8px #0008;z-index:2}
+.advertisement-image span#advertisement-visual-title{font-size:clamp(18px,2vw,27px)!important;font-weight:850!important;letter-spacing:0!important}
+.advertisement-image small#advertisement-visual-subtitle{font-size:12px!important;font-weight:650!important}
