@@ -61,16 +61,15 @@
           <button type="button" class="auth-tab" id="show-login">Se connecter</button>
         </div>
         <form id="signup-form" class="auth-form">
-          <h3>Créer mon compte</h3>
-          <label for="account-type">Je suis</label>
-          <select id="account-type" required><option value="entreprise">Une entreprise</option><option value="independant">Un indépendant</option></select>
-          <label for="signup-name">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
-          <div id="company-fields">
-            <label for="company-name">Nom de l'entreprise</label><input id="company-name" autocomplete="organization">
-            <label for="company-siret">SIRET (facultatif)</label><input id="company-siret" inputmode="numeric" maxlength="14">
+          <h3 id="signup-form-title">Créer mon espace indépendant</h3>
+          <div class="signup-type-switch" role="group" aria-label="Choix du type de compte">
+            <button type="button" class="signup-type-button active" data-account-type="independant">👷 Indépendant</button>
+            <button type="button" class="signup-type-button" data-account-type="entreprise">🏢 Entreprise</button>
           </div>
-          <div id="independent-fields" hidden>
-            <label for="independent-skills">Vos compétences / métiers</label><input id="independent-skills" placeholder="Ex. soudure, électricité, manutention">
+          <select id="account-type" required hidden aria-hidden="true" tabindex="-1"><option value="independant">Un indépendant</option><option value="entreprise">Une entreprise</option></select>
+          <div id="independent-fields">
+            <label for="signup-name">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
+            <label for="independent-skills">Vos compétences / métiers</label><input id="independent-skills" placeholder="Ex. soudure, électricité, manutention" required>
             <label for="independent-description">Présentation</label><textarea id="independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
             <label for="independent-experience">Expérience professionnelle (facultatif)</label><input id="independent-experience" placeholder="Ex. 8 ans dans le bâtiment, chantier, atelier…">
             <label for="independent-rate">Tarif indicatif (facultatif)</label><input id="independent-rate" placeholder="Ex. 25 €/h, forfait, à convenir">
@@ -81,11 +80,18 @@
             <img id="signup-independent-photo-preview" class="account-photo-preview" alt="Aperçu de votre photo de profil" hidden>
             <small class="media-help">JPG, PNG ou WebP · 3 Mo maximum</small>
           </div>
-          <label for="signup-city">Ville</label><input id="signup-city" autocomplete="address-level2" required>
-          <label for="signup-phone">Téléphone</label><input id="signup-phone" type="tel" autocomplete="tel">
-          <label for="signup-email">Adresse e-mail</label><input id="signup-email" type="email" autocomplete="email" required>
-          <label for="signup-password">Mot de passe (6 caractères minimum)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="6" required>
-          <button class="button button-dark auth-submit" type="submit">Créer mon compte</button>
+          <div id="company-fields" hidden>
+            <label for="signup-name" class="company-contact-label">Nom du responsable / contact</label>
+            <label for="company-name">Nom de l'entreprise</label><input id="company-name" autocomplete="organization" required>
+            <label for="company-siret">SIRET (facultatif)</label><input id="company-siret" inputmode="numeric" maxlength="14">
+          </div>
+          <div class="signup-common-fields">
+            <label for="signup-city">Ville</label><input id="signup-city" autocomplete="address-level2" required>
+            <label for="signup-phone">Téléphone</label><input id="signup-phone" type="tel" autocomplete="tel">
+            <label for="signup-email">Adresse e-mail</label><input id="signup-email" type="email" autocomplete="email" required>
+            <label for="signup-password">Mot de passe (6 caractères minimum)</label><input id="signup-password" type="password" autocomplete="new-password" minlength="6" required>
+          </div>
+          <button class="button button-dark auth-submit" type="submit">Créer mon compte indépendant</button>
           <button class="button button-outline auth-submit" type="button" id="google-signup">Créer / continuer avec Google</button>
           <p id="signup-message" class="auth-message" role="status"></p>
         </form>
