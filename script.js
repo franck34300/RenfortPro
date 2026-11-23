@@ -546,9 +546,9 @@ onAuthStateChanged(auth,user=>{
 
 // Rotation des annonces de démonstration du bandeau publicitaire (60 secondes)
 const rotatingAds=[
-  {visual:'Tech Métal',icon:'⚙️',subtitle:'Solutions industrielles',label:'ANNONCE DE DÉMONSTRATION',title:'Votre partenaire pour tous vos projets.',description:'Soudure, fabrication et solutions métalliques pour les professionnels.',button:'Découvrir notre site',url:'#partenaires',tone:'tools'},
-  {visual:'EcoBat',icon:'🏡',subtitle:'Construire durable, pour demain',label:'ANNONCE DE DÉMONSTRATION',title:'Construire durable, pour demain.',description:'Des solutions de construction et de rénovation pensées pour vos projets.',button:'En savoir plus',url:'#partenaires',tone:'ecobat'},
-  {visual:'JardiPlus',icon:'🌿',subtitle:'Aménagement & entretien paysager',label:'ANNONCE DE DÉMONSTRATION',title:'Donnez vie à vos espaces.',description:'Création, entretien et aménagement de vos extérieurs.',button:'Voir nos réalisations',url:'#partenaires',tone:'jardiplus'}
+  {visual:'Tech Métal',icon:'⚙️',image:'https://images.unsplash.com/photo-1745448797905-36e057c09088?auto=format&fit=crop&w=1200&q=85',subtitle:'Solutions industrielles',label:'ANNONCE DE DÉMONSTRATION',title:'Votre partenaire pour tous vos projets.',description:'Soudure, fabrication et solutions métalliques pour les professionnels.',button:'Découvrir notre site',url:'#partenaires',tone:'tools'},
+  {visual:'EcoBat',icon:'🏡',image:'https://images.unsplash.com/photo-1766603636562-531bb3e1dda8?auto=format&fit=crop&w=1200&q=85',subtitle:'Construire durable, pour demain',label:'ANNONCE DE DÉMONSTRATION',title:'Construire durable, pour demain.',description:'Des solutions de construction et de rénovation pensées pour vos projets.',button:'En savoir plus',url:'#partenaires',tone:'ecobat'},
+  {visual:'JardiPlus',icon:'🌿',image:'https://images.unsplash.com/photo-1776186243408-3c0489503faa?auto=format&fit=crop&w=1200&q=85',subtitle:'Aménagement & entretien paysager',label:'ANNONCE DE DÉMONSTRATION',title:'Donnez vie à vos espaces.',description:'Création, entretien et aménagement de vos extérieurs.',button:'Voir nos réalisations',url:'#partenaires',tone:'jardiplus'}
 ];
 (function initAdRotation(){
   const panel=document.querySelector('#advertisement-panel');if(!panel)return;
@@ -556,7 +556,7 @@ const rotatingAds=[
   let index=0;
   function showAd(next){
     index=next%rotatingAds.length;const ad=rotatingAds[index];panel.classList.add('ad-changing');
-    window.setTimeout(()=>{icon.textContent=ad.icon;visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
+    window.setTimeout(()=>{icon.textContent=ad.icon;visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;image.style.backgroundImage='linear-gradient(90deg,rgba(10,25,20,.65),rgba(10,25,20,.05)),url("'+ad.image+'")';counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
   }
   showAd(0);window.setInterval(()=>showAd(index+1),60000);
 })();
