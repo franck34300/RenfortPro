@@ -189,12 +189,27 @@ headerAccountLink?.addEventListener('click',e=>{
   if(!auth.currentUser) setAuthMode('login');
   document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
 });
-accountType?.addEventListener('change',()=>{
+function updateSignupType(){
   const isCompany=accountType.value==='entreprise';
   companyFields.hidden=!isCompany;
   independentFields.hidden=isCompany;
   document.querySelector('#company-name').required=isCompany;
   document.querySelector('#independent-skills').required=!isCompany;
+  document.querySelector('#signup-form-title').textContent=isCompany?'Créer mon espace entreprise':'Créer mon espace indépendant';
+  document.querySelector('.company-contact-label').hidden=!isCompany;
+  document.querySelector('#signup-form button[type="submit"]').textContent=isCompany?'Créer mon compte entreprise':'Créer mon compte indépendant';
+  document.querySelectorAll('.signup-type-button').forEach(button=>{
+    const active=button.dataset.accountType===accountType.value;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+accountType?.addEventListener('change',updateSignupType);
+document.querySelectorAll('.signup-type-button').forEach(button=>{
+  button.addEventListener('click',()=>{
+    accountType.value=button.dataset.accountType;
+    accountType.dispatchEvent(new Event('change'));
+  });
 });
 accountType?.dispatchEvent(new Event('change'));
 
