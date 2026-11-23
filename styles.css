@@ -120,3 +120,12 @@
 .advertisement-image[data-tone="services"]{background:linear-gradient(135deg,#e8e2d8,#d2c5b4)}
 .advertisement-image[data-tone="jobs"]{background:linear-gradient(135deg,#dfe5ed,#c4d0df)}
 .advertisement-rotation{display:block;text-align:right;margin-top:12px;font-size:10px;color:#8a948b}
+
+/* Visuels de démonstration pour les trois annonceurs fictifs */
+.advertisement-demo-icon{font-size:clamp(48px,6vw,78px);line-height:1;filter:drop-shadow(0 8px 6px #0002);z-index:1}
+.advertisement-image{gap:10px!important}
+.advertisement-image[data-tone="tools"]{background:linear-gradient(120deg,#d8e0e1,#8ea5aa 55%,#243c48);color:#193944}
+.advertisement-image[data-tone="ecobat"]{background:linear-gradient(120deg,#dce9d7,#b6cba9 55%,#718d65);color:#254a2d}
+.advertisement-image[data-tone="jardiplus"]{background:linear-gradient(120deg,#e3eddd,#b7d2b0 55%,#6f9b70);color:#20523a}
+.advertisement-image[data-tone="tools"] span#advertisement-visual-title,.advertisement-image[data-tone="ecobat"] span#advertisement-visual-title,.advertisement-image[data-tone="jardiplus"] span#advertisement-visual-title{font-size:clamp(18px,2.2vw,26px);letter-spacing:0;font-weight:800}
+.advertisement-image[data-tone="tools"] small,.advertisement-image[data-tone="ecobat"] small,.advertisement-image[data-tone="jardiplus"] small{font-size:12px;font-weight:600}
