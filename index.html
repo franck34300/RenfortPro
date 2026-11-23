@@ -67,8 +67,8 @@
             <button type="button" class="signup-type-button" data-account-type="entreprise">🏢 Entreprise</button>
           </div>
           <select id="account-type" required hidden aria-hidden="true" tabindex="-1"><option value="independant">Un indépendant</option><option value="entreprise">Une entreprise</option></select>
+          <label for="signup-name" id="signup-contact-label">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
           <div id="independent-fields">
-            <label for="signup-name">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
             <label for="independent-skills">Vos compétences / métiers</label><input id="independent-skills" placeholder="Ex. soudure, électricité, manutention" required>
             <label for="independent-description">Présentation</label><textarea id="independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
             <label for="independent-experience">Expérience professionnelle (facultatif)</label><input id="independent-experience" placeholder="Ex. 8 ans dans le bâtiment, chantier, atelier…">
@@ -81,7 +81,6 @@
             <small class="media-help">JPG, PNG ou WebP · 3 Mo maximum</small>
           </div>
           <div id="company-fields" hidden>
-            <label for="signup-name" class="company-contact-label">Nom du responsable / contact</label>
             <label for="company-name">Nom de l'entreprise</label><input id="company-name" autocomplete="organization" required>
             <label for="company-siret">SIRET (facultatif)</label><input id="company-siret" inputmode="numeric" maxlength="14">
           </div>
