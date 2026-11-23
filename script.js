@@ -543,3 +543,20 @@ onAuthStateChanged(auth,user=>{
   if(user)displayAccount(user);
   else setAuthMode('login');
 });
+
+// Rotation des annonces du bandeau publicitaire (60 secondes)
+const rotatingAds=[
+  {visual:'OUTILS & ÉQUIPEMENT',subtitle:'Les professionnels bien équipés',label:'ANNONCE DÉMO · OUTILLAGE',title:'Le bon matériel pour vos chantiers.',description:'Découvrez des équipements et solutions conçus pour les métiers du terrain.',button:'Découvrir',url:'#partenaires',tone:'tools'},
+  {visual:'SERVICES AUX ENTREPRISES',subtitle:'Votre activité au quotidien',label:'ANNONCE DÉMO · SERVICES',title:'Simplifiez votre activité professionnelle.',description:'Un service, une solution ou un partenaire pour accompagner votre entreprise.',button:'En savoir plus',url:'#partenaires',tone:'services'},
+  {visual:'RECRUTEMENT & OPPORTUNITÉS',subtitle:'Faites connaître vos besoins',label:'ANNONCE DÉMO · RECRUTEMENT',title:'Vous recherchez de nouveaux talents ?',description:'Présentez votre entreprise et faites connaître vos opportunités aux visiteurs de RenfortPro.',button:'Voir les possibilités',url:'#partenaires',tone:'jobs'}
+];
+(function initAdRotation(){
+  const panel=document.querySelector('#advertisement-panel');if(!panel)return;
+  const image=document.querySelector('#advertisement-image'),visual=document.querySelector('#advertisement-visual-title'),subtitle=document.querySelector('#advertisement-visual-subtitle'),label=document.querySelector('#advertisement-label'),title=document.querySelector('#advertisement-title'),description=document.querySelector('#advertisement-description'),link=document.querySelector('#advertisement-link'),counter=document.querySelector('#advertisement-rotation');
+  let index=0;
+  function showAd(next){
+    index=next%rotatingAds.length;const ad=rotatingAds[index];panel.classList.add('ad-changing');
+    window.setTimeout(()=>{visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
+  }
+  showAd(0);window.setInterval(()=>showAd(index+1),60000);
+})();
