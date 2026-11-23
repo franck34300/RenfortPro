@@ -145,7 +145,7 @@ import {
   signOut, onAuthStateChanged, updateProfile
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs, deleteDoc
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs, deleteDoc, addDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -556,7 +556,16 @@ const rotatingAds=[
   let index=0;
   function showAd(next){
     index=next%rotatingAds.length;const ad=rotatingAds[index];panel.classList.add('ad-changing');
-    window.setTimeout(()=>{icon.textContent=ad.icon;visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent=ad.button+' →';link.href=ad.url;image.dataset.tone=ad.tone;image.style.backgroundImage='linear-gradient(90deg,rgba(10,25,20,.65),rgba(10,25,20,.05)),url("'+ad.image+'")';counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
+    window.setTimeout(()=>{icon.textContent=ad.icon;visual.textContent=ad.visual;subtitle.textContent=ad.subtitle;label.textContent=ad.label;title.textContent=ad.title;description.textContent=ad.description;link.textContent='Créer votre publicité →';image.dataset.tone=ad.tone;image.style.backgroundImage='linear-gradient(90deg,rgba(10,25,20,.65),rgba(10,25,20,.05)),url("'+ad.image+'")';counter.textContent='Annonce '+(index+1)+'/'+rotatingAds.length;panel.classList.remove('ad-changing');},220);
   }
   showAd(0);window.setInterval(()=>showAd(index+1),60000);
+})();
+
+// Formulaire annonceur — demande de publicité indépendante des comptes professionnels.
+(function initAdvertiserForm(){
+ const modal=document.querySelector('#advertiser-modal'),form=document.querySelector('#advertiser-form'),fileInput=document.querySelector('#advertiser-image-file'),preview=document.querySelector('#advertiser-image-preview'),message=document.querySelector('#advertiser-form-message'),submit=document.querySelector('#advertiser-submit');
+ if(!modal||!form)return; document.querySelector('#advertisement-link')?.addEventListener('click',()=>{modal.hidden=false;document.body.classList.add('modal-open');});
+ modal.querySelectorAll('[data-close-advertiser]').forEach(el=>el.addEventListener('click',()=>{modal.hidden=true;document.body.classList.remove('modal-open');}));
+ fileInput.addEventListener('change',()=>{const file=fileInput.files?.[0];preview.hidden=true;if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){fileInput.value='';message.textContent='Image refusée : JPG, PNG ou WebP, 5 Mo maximum.';return;}preview.src=URL.createObjectURL(file);preview.hidden=false;message.textContent='Aperçu de votre bannière';});
+ form.addEventListener('submit',async e=>{e.preventDefault();const file=fileInput.files?.[0];if(!file||file.size>5*1024*1024){message.textContent='Choisissez une image de 5 Mo maximum.';return;}const data=new FormData(form),website=data.get('website').trim();if(!/^https?:\/\//i.test(website)){message.textContent='Le site doit commencer par https:// ou http://';return;}submit.disabled=true;submit.textContent='Envoi en cours…';message.textContent='';try{const imageUrl=await uploadProfileImage(file,'advertiser-'+Date.now(),'advertiser');await addDoc(collection(db,'advertiser_requests'),{company:data.get('company').trim(),contact:data.get('contact').trim(),email:data.get('email').trim(),phone:data.get('phone').trim(),website,title:data.get('title').trim(),description:data.get('description').trim(),image_url:imageUrl,image_size:file.size,status:'pending',created_at:serverTimestamp()});message.textContent='Votre demande a bien été enregistrée. Elle sera étudiée avant publication.';form.reset();preview.hidden=true;}catch(err){console.error('Demande annonceur:',err);message.textContent=err.code==='permission-denied'?'Le formulaire est prêt, mais les règles Firestore doivent autoriser l’enregistrement des demandes annonceurs.':'Impossible d’envoyer la demande pour le moment. Réessayez ultérieurement.';}finally{submit.disabled=false;submit.textContent='Envoyer ma demande';}});
 })();
