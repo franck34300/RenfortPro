@@ -291,8 +291,59 @@ document.querySelector('#save-independent-profile')?.addEventListener('click',as
   }catch(error){showAuthMessage(msg,'Enregistrement impossible : '+error.message,true);}
   finally{btn.disabled=false;btn.textContent='Enregistrer mon profil professionnel';}
 });
+
+async function loadAdminDashboard(user){
+  const panel=document.querySelector('#admin-dashboard');
+  if(!panel)return;
+  panel.hidden=true;
+  if(!user)return;
+  const status=document.querySelector('#admin-dashboard-status');
+  const refresh=document.querySelector('#admin-refresh-button');
+  async function load(){
+    refresh.disabled=true;
+    status.textContent='Chargement des statistiques…';
+    try{
+      const token=await user.getIdToken();
+      const response=await fetch('/api/admin/stats',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+      const result=await response.json();
+      if(response.status===403||response.status===401){panel.hidden=true;return;}
+      if(!response.ok)throw new Error(result.error||'Statistiques indisponibles.');
+      panel.hidden=false;
+      document.querySelector('#admin-independent-count').textContent=Number(result.independents||0).toLocaleString('fr-FR');
+      document.querySelector('#admin-company-count').textContent=Number(result.companies||0).toLocaleString('fr-FR');
+      document.querySelector('#admin-month-count').textContent=Number(result.newThisMonth||0).toLocaleString('fr-FR');
+      document.querySelector('#admin-total-count').textContent=Number(result.total||0).toLocaleString('fr-FR')+' comptes au total';
+      const chart=document.querySelector('#admin-monthly-chart');chart.replaceChildren();
+      const months=Array.isArray(result.months)?result.months:[];
+      const max=Math.max(1,...months.map(item=>Number(item.count)||0));
+      months.forEach(item=>{
+        const column=document.createElement('div');column.className='admin-chart-column';
+        const value=document.createElement('span');value.className='admin-chart-value';value.textContent=String(item.count||0);
+        const track=document.createElement('div');track.className='admin-chart-track';
+        const bar=document.createElement('div');bar.className='admin-chart-bar';bar.style.height=Math.max(4,((Number(item.count)||0)/max)*100)+'%';track.append(bar);
+        const label=document.createElement('small');label.textContent=item.label||'';
+        column.append(value,track,label);chart.append(column);
+      });
+      const recent=document.querySelector('#admin-recent-list');recent.replaceChildren();
+      const items=Array.isArray(result.recent)?result.recent:[];
+      if(!items.length){const empty=document.createElement('p');empty.textContent='Aucune inscription enregistrée pour le moment.';recent.append(empty);}
+      items.forEach(item=>{
+        const row=document.createElement('div');row.className='admin-recent-row';
+        const identity=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label||'Nouveau membre';
+        const meta=document.createElement('small');meta.textContent=(item.type==='entreprise'?'Entreprise':'Indépendant')+(item.city?' · '+item.city:'');identity.append(name,meta);
+        const date=document.createElement('time');date.textContent=item.date||'';row.append(identity,date);recent.append(row);
+      });
+      status.textContent='Statistiques mises à jour.';
+    }catch(error){
+      status.textContent='Impossible de charger les statistiques : '+error.message;
+    }finally{refresh.disabled=false;}
+  }
+  refresh.onclick=load;
+  await load();
+}
 async function displayAccount(user){
   signupForm.hidden=true;loginForm.hidden=true;accountPanel.hidden=false;
+  loadAdminDashboard(user);
   document.querySelector('#show-signup').classList.remove('active');
   document.querySelector('#show-login').classList.remove('active');
   let data;
