@@ -100,3 +100,15 @@
 .signup-type-button.active{background:#fffdf9;color:var(--green);border-color:#d8e2d8;box-shadow:0 3px 10px #2035290d}
 .signup-type-button:hover{border-color:#b7c9bb}
 .signup-common-fields{margin-top:18px;padding-top:6px;border-top:1px solid var(--line)}
+
+/* Bandeau publicitaire principal */
+.advertisement-panel{width:100%;height:100%;min-height:320px;display:flex;flex-direction:column;overflow:hidden;border:1px solid #d6ddd4;border-radius:26px;background:#fffdf9;box-shadow:0 18px 40px #193e2910}
+.advertisement-image{flex:1;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#dfe8de,#c7d8ca);color:#31583d;position:relative}
+.advertisement-image:before{content:"";position:absolute;inset:14px;border:1px dashed #31583d40;border-radius:14px}
+.advertisement-image span{font-size:11px;font-weight:800;letter-spacing:.14em;z-index:1}
+.advertisement-image small{font-size:12px;z-index:1}
+.advertisement-content{padding:24px 26px 26px}
+.advertisement-content h2{font-family:Georgia,serif;font-size:clamp(23px,2.6vw,32px);line-height:1.12;color:var(--green);margin:4px 0 10px}
+.advertisement-content>p:not(.eyebrow){color:#59645b;font-size:13px;line-height:1.55;margin:0 0 18px}
+.advertisement-content .button{align-self:flex-start}
+@media(max-width:650px){.advertisement-panel{min-height:250px;border-radius:20px}.advertisement-image{min-height:110px}.advertisement-content{padding:18px}.advertisement-content h2{font-size:24px}}
