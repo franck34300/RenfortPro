@@ -1,4 +1,5 @@
 const { getAdmin } = require("../../lib/firebase-admin");
+const { paypalToken } = require("../../lib/paypal");
 
 const ADMIN_EMAIL = "renfortpro.contact@gmail.com";
 
@@ -18,6 +19,32 @@ module.exports = async function handler(req, res) {
 
     const db = admin.firestore();
     const snapshot = await db.collection("profiles").get();
+    const planId = process.env.PAYPAL_PLAN_ID;
+    if (!planId) throw new Error("PAYPAL_PLAN_ID manquant.");
+
+    // Une entreprise ne compte que si son abonnement PayPal est réellement actif.
+    const companyCandidates = snapshot.docs.filter((doc) => {
+      const data = doc.data() || {};
+      return data.account_type === "entreprise" && String(data.paypal_subscription_id || "").trim();
+    });
+    const activeCompanyIds = new Set();
+    if (companyCandidates.length) {
+      const { accessToken, base } = await paypalToken();
+      const checks = await Promise.all(companyCandidates.map(async (doc) => {
+        const data = doc.data() || {};
+        const subscriptionId = String(data.paypal_subscription_id || "").trim();
+        const response = await fetch(base + "/v1/billing/subscriptions/" + encodeURIComponent(subscriptionId), {
+          headers: { Authorization: "Bearer " + accessToken }
+        });
+        if (!response.ok) throw new Error("Vérification PayPal impossible pour une entreprise.");
+        const subscription = await response.json();
+        return subscription.status === "ACTIVE" &&
+          subscription.plan_id === planId &&
+          subscription.custom_id === doc.id ? doc.id : null;
+      }));
+      checks.filter(Boolean).forEach((id) => activeCompanyIds.add(id));
+    }
+
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
     const buckets = [];
@@ -38,7 +65,9 @@ module.exports = async function handler(req, res) {
 
     snapshot.forEach((doc) => {
       const data = doc.data() || {};
-      const type = data.account_type === "entreprise" ? "entreprise" : "independant";
+      const isCompany = data.account_type === "entreprise";
+      if (isCompany && !activeCompanyIds.has(doc.id)) return;
+      const type = isCompany ? "entreprise" : "independant";
       if (type === "entreprise") companies++;
       else independents++;
 
@@ -66,7 +95,7 @@ module.exports = async function handler(req, res) {
 
     recent.sort((a, b) => b.timestamp - a.timestamp);
     return res.status(200).json({
-      total: snapshot.size,
+      total: independents + companies,
       independents,
       companies,
       newThisMonth,
