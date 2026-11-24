@@ -20,20 +20,28 @@ module.exports = async function handler(req, res) {
       return send(res, 403, { error: "L'accès aux profils complets est réservé aux entreprises abonnées." });
     }
 
-    const subscriptionId = String(company.paypal_subscription_id || "").trim();
-    const planId = process.env.PAYPAL_PLAN_ID;
-    if (!subscriptionId || !planId) {
-      return send(res, 403, { error: "Un abonnement entreprise actif est nécessaire pour consulter les profils complets." });
-    }
+    // Accès administrateur réservé à l'adresse RenfortPro vérifiée.
+    const isRenfortProAdmin =
+      String(decoded.email || "").toLowerCase() === "renfortpro.contact@gmail.com" &&
+      decoded.email_verified === true;
 
-    const { accessToken, base } = await paypalToken();
-    const paypalResponse = await fetch(base + "/v1/billing/subscriptions/" + encodeURIComponent(subscriptionId), {
-      headers: { Authorization: "Bearer " + accessToken }
-    });
-    const subscription = await paypalResponse.json();
-    if (!paypalResponse.ok) return send(res, 502, { error: "La vérification de l'abonnement PayPal a échoué." });
-    if (subscription.custom_id !== decoded.uid || subscription.plan_id !== planId || subscription.status !== "ACTIVE") {
-      return send(res, 403, { error: "Votre abonnement PayPal n'est pas actif. L'accès aux profils complets est suspendu." });
+    // Les entreprises clientes doivent toujours disposer d'un abonnement PayPal actif.
+    if (!isRenfortProAdmin) {
+      const subscriptionId = String(company.paypal_subscription_id || "").trim();
+      const planId = process.env.PAYPAL_PLAN_ID;
+      if (!subscriptionId || !planId) {
+        return send(res, 403, { error: "Un abonnement entreprise actif est nécessaire pour consulter les profils complets." });
+      }
+
+      const { accessToken, base } = await paypalToken();
+      const paypalResponse = await fetch(base + "/v1/billing/subscriptions/" + encodeURIComponent(subscriptionId), {
+        headers: { Authorization: "Bearer " + accessToken }
+      });
+      const subscription = await paypalResponse.json();
+      if (!paypalResponse.ok) return send(res, 502, { error: "La vérification de l'abonnement PayPal a échoué." });
+      if (subscription.custom_id !== decoded.uid || subscription.plan_id !== planId || subscription.status !== "ACTIVE") {
+        return send(res, 403, { error: "Votre abonnement PayPal n'est pas actif. L'accès aux profils complets est suspendu." });
+      }
     }
 
     const profileId = String(req.query.id || "").trim();
