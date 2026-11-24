@@ -1,6 +1,6 @@
 const { getAdmin } = require("../../lib/firebase-admin");
 
-const ADMIN_EMAIL = String(process.env.RENFORTPRO_ADMIN_EMAIL || "lebihan.agde@gmail.com").trim().toLowerCase();
+const ADMIN_EMAIL = "renfortpro.contact@gmail.com";
 
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
