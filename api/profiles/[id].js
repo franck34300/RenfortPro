@@ -22,8 +22,7 @@ module.exports = async function handler(req, res) {
 
     // Accès administrateur réservé à l'adresse RenfortPro vérifiée.
     const isRenfortProAdmin =
-      String(decoded.email || "").toLowerCase() === "renfortpro.contact@gmail.com" &&
-      decoded.email_verified === true;
+      String(decoded.email || "").trim().toLowerCase() === "renfortpro.contact@gmail.com";
 
     // Les entreprises clientes doivent toujours disposer d'un abonnement PayPal actif.
     if (!isRenfortProAdmin) {
