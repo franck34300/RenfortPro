@@ -48,7 +48,7 @@ const skillSynonyms={
   administratif:['administratif','administrative','administration','secretariat','secretaire','assistant','assistante'],
   administrative:['administratif','administrative','administration','secretariat','secretaire','assistant','assistante'],
   soudeur:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
-  soudeuse:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses','tig'],
+  soudeuse:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
   soudure:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
   tig:['tig'],
   electricien:['electricien','electricienne','electricite','electrique'],
