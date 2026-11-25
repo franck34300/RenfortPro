@@ -172,3 +172,18 @@
 .admin-recent-row time{white-space:nowrap}
 .admin-status{min-height:16px;font-size:11px;color:#64766a;margin:10px 0 0}
 @media(max-width:520px){.admin-stat-grid{grid-template-columns:1fr 1fr}.admin-stat-card:last-child{grid-column:1/-1}.admin-stat-card strong{font-size:26px}.admin-dashboard-heading{align-items:flex-start;flex-direction:column}.admin-chart-heading{align-items:flex-start;flex-direction:column}.admin-recent-row{align-items:flex-start;flex-direction:column;gap:4px}}
+
+
+/* Sélecteur de métiers et compétences à choix multiples */
+.skill-picker{position:relative;margin:8px 0 14px;border:1px solid #dcd8cf;border-radius:12px;background:#fff}
+.skill-picker>summary{padding:12px 14px;cursor:pointer;color:var(--green);font-size:13px;font-weight:700;list-style:none}
+.skill-picker>summary::-webkit-details-marker{display:none}
+.skill-picker>summary:after{content:"＋";float:right}
+.skill-picker[open]>summary:after{content:"−"}
+.skill-picker>summary span{float:right;margin-right:12px;color:var(--muted);font-size:11px;font-weight:500}
+.skill-picker-options{max-height:340px;overflow:auto;padding:4px 14px 14px;border-top:1px solid var(--line)}
+.skill-picker-group{border:0;border-bottom:1px solid #eee9e1;padding:10px 0;margin:0}
+.skill-picker-group legend{padding:0 0 7px;color:var(--green);font-size:12px;font-weight:800}
+.skill-picker-option{display:inline-flex!important;align-items:center;gap:7px;width:50%;margin:5px 0!important;font-size:12px!important;font-weight:500!important;vertical-align:top}
+.skill-picker-option input{width:15px!important;height:15px;margin:0;accent-color:var(--green);flex:0 0 15px}
+@media(max-width:600px){.skill-picker-option{width:100%}}
