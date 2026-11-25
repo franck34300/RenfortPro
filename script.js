@@ -273,6 +273,17 @@ document.querySelectorAll('.signup-type-button').forEach(button=>{
 });
 accountType?.dispatchEvent(new Event('change'));
 
+// Le bouton principal destiné aux indépendants ouvre directement leur formulaire d'inscription.
+document.querySelector('#hero-independent-cta')?.addEventListener('click',event=>{
+  event.preventDefault();
+  if(!auth.currentUser){
+    setAuthMode('signup');
+    accountType.value='independant';
+    accountType.dispatchEvent(new Event('change'));
+  }
+  document.querySelector('#connexion')?.scrollIntoView({behavior:'smooth'});
+});
+
 function validateImage(file,messageTarget){
   if(!file){showAuthMessage(messageTarget,'Choisissez une image avant de continuer.',true);return false;}
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)){showAuthMessage(messageTarget,'Format accepté : JPG, PNG ou WebP.',true);return false;}
