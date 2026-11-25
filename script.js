@@ -7,7 +7,7 @@ async function loadPublicProfiles(){
     for(const docSnap of snapshot.docs){
       const data=docSnap.data();
       let latitude=data.latitude,longitude=data.longitude;
-      if((!Number.isFinite(Number(latitude))||!Number.isFinite(Number(longitude)))&&data.city){
+      if((latitude==null||longitude==null||!Number.isFinite(Number(latitude))||!Number.isFinite(Number(longitude)))&&data.city){
         const coordinates=await geocodeLocation(data.city,data.postal_code||'');
         if(coordinates){latitude=coordinates.latitude;longitude=coordinates.longitude;}
       }
