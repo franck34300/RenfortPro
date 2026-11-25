@@ -4,7 +4,15 @@ async function loadPublicProfiles(){
   try{
     const snapshot=await getDocs(collection(db,'public_directory'));
     grid.replaceChildren();
-    snapshot.forEach(docSnap=>renderPublicProfile(docSnap.data(),docSnap.id));
+    for(const docSnap of snapshot.docs){
+      const data=docSnap.data();
+      let latitude=data.latitude,longitude=data.longitude;
+      if((!Number.isFinite(Number(latitude))||!Number.isFinite(Number(longitude)))&&data.city){
+        const coordinates=await geocodeLocation(data.city,data.postal_code||'');
+        if(coordinates){latitude=coordinates.latitude;longitude=coordinates.longitude;}
+      }
+      renderPublicProfile({...data,latitude,longitude},docSnap.id);
+    }
     count.textContent=snapshot.size+' profil'+(snapshot.size>1?'s':'');
     message.textContent=snapshot.empty?'Aucun indépendant n’a encore publié sa fiche.':snapshot.size+' fiche'+(snapshot.size>1?'s':'')+' professionnelle publiée'+(snapshot.size>1?'s':'')+'.';
   }catch(error){
@@ -16,7 +24,7 @@ async function loadPublicProfiles(){
 function renderPublicProfile(data,profileId){
   const card=document.createElement('article');card.className='profile-card profile-card-horizontal';card.dataset.profileId=profileId;
   const skills=data.skills||'Professionnel indépendant';
-  card.dataset.skill=skills;card.dataset.location=[data.city||'',data.postal_code||''].filter(Boolean).join(' ');card.dataset.availability='';
+  card.dataset.skill=skills;card.dataset.location=[data.city||'',data.postal_code||''].filter(Boolean).join(' ');card.dataset.latitude=data.latitude??'';card.dataset.longitude=data.longitude??'';card.dataset.availability='';
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');card.dataset.avatar=data.avatar_url||'';
   const main=document.createElement('div');main.className='profile-card-main';
   const avatar=document.createElement('div');avatar.className='avatar avatar-1';
@@ -72,17 +80,53 @@ function skillTermMatches(term,searchableTokens){
     return searchableTokens.some(token=>token===normalized||token.startsWith(normalized)||normalized.startsWith(token));
   });
 }
-function filterProfiles(){
+const geocodeCache=new Map();
+async function geocodeLocation(city,postalCode=''){
+  const query=[postalCode,city].filter(Boolean).join(' ').trim();
+  if(!query)return null;
+  const cacheKey=normalizeText(query);
+  if(geocodeCache.has(cacheKey))return geocodeCache.get(cacheKey);
+  try{
+    const params=new URLSearchParams({q:query,type:'municipality',limit:'1'});
+    const response=await fetch('https://api-adresse.data.gouv.fr/search/?'+params.toString());
+    if(!response.ok)throw new Error('Géocodage indisponible');
+    const result=await response.json();
+    const coordinates=result.features?.[0]?.geometry?.coordinates;
+    const point=Array.isArray(coordinates)&&coordinates.length>=2
+      ?{longitude:Number(coordinates[0]),latitude:Number(coordinates[1])}:null;
+    geocodeCache.set(cacheKey,point);
+    return point;
+  }catch(error){
+    console.warn('Localisation non géocodée :',query,error);
+    return null;
+  }
+}
+function distanceInKm(a,b){
+  const radians=value=>value*Math.PI/180;
+  const dLat=radians(b.latitude-a.latitude),dLon=radians(b.longitude-a.longitude);
+  const lat1=radians(a.latitude),lat2=radians(b.latitude);
+  const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+}
+async function filterProfiles(){
   const skill=normalizeText(document.querySelector('#skill-filter').value);
-  const place=normalizeText(document.querySelector('#location-filter').value);
+  const place=document.querySelector('#location-filter').value.trim();
   const availability=document.querySelector('#availability-filter').value;
   const terms=skill?skill.split(/\s+/).filter(Boolean):[];
+  const searchPoint=place?await geocodeLocation(place):null;
   let shown=0;
   document.querySelectorAll('#profile-results .profile-card').forEach(card=>{
     const searchableTokens=normalizeText(card.dataset.skill+' '+card.textContent).split(/\s+/).filter(Boolean);
     const location=normalizeText(card.dataset.location+' '+card.textContent);
     const matchSkill=!terms.length||terms.some(term=>skillTermMatches(term,searchableTokens));
-    const matchPlace=!place||place.split(/\s+/).every(term=>location.includes(term));
+    let matchPlace=!place;
+    if(place&&searchPoint){
+      const latitude=Number(card.dataset.latitude),longitude=Number(card.dataset.longitude);
+      matchPlace=Number.isFinite(latitude)&&Number.isFinite(longitude)&&distanceInKm(searchPoint,{latitude,longitude})<=30;
+    }else if(place){
+      const normalizedPlace=normalizeText(place);
+      matchPlace=normalizedPlace.split(/\s+/).every(term=>location.includes(term));
+    }
     const matchAvailability=!availability||card.dataset.availability===availability;
     card.hidden=!(matchSkill&&matchPlace&&matchAvailability);
     if(!card.hidden)shown++;
@@ -92,7 +136,6 @@ function filterProfiles(){
 profileForm?.addEventListener('submit',e=>{e.preventDefault();filterProfiles();});
 document.querySelector('#availability-filter')?.addEventListener('change',filterProfiles);
 document.querySelector('#skill-filter')?.addEventListener('input',filterProfiles);
-document.querySelector('#location-filter')?.addEventListener('input',filterProfiles);
 const profileModal=document.querySelector('#profile-modal');
 async function openProfile(card){
   const user=auth.currentUser;
@@ -263,9 +306,12 @@ async function publishPublicProfile(uid){
   if(!snap.exists())throw new Error('Profil privé introuvable.');
   const data=snap.data();
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
+  const coordinates=await geocodeLocation(data.city||'',data.postal_code||'');
   await setDoc(doc(db,'public_directory',uid),{
     full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',
-    city:data.city||'',postal_code:data.postal_code||'',avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
+    city:data.city||'',postal_code:data.postal_code||'',
+    latitude:coordinates?.latitude??null,longitude:coordinates?.longitude??null,
+    avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
   });
 }
 async function refreshPublicProfileSetting(user,data){
