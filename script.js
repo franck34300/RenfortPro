@@ -276,9 +276,11 @@ function syncSkillPicker(optionsId,inputId,otherId,existingValue){
   const selected=[...host.querySelectorAll('input[type="checkbox"]:checked')].map(box=>box.value);
   const extra=other?.value.split(/[,;|]/).map(x=>x.trim()).filter(Boolean)||[];
   field.value=[...new Set([...selected,...extra])].join(', ');
+  field.dispatchEvent(new Event('input',{bubbles:true}));
 }
 setupSkillPicker('signup-skill-options','independent-skills','independent-skills-other');
 setupSkillPicker('edit-skill-options','edit-independent-skills','edit-independent-skills-other');
+setupSkillPicker('search-skill-options','skill-filter','skill-filter-other');
 
 function showAuthMessage(target,message,isError=false){if(!target)return;target.textContent=message;target.classList.toggle('is-error',isError);}
 function setAuthMode(mode){
@@ -674,7 +676,7 @@ async function googleSignIn(){
         siret:type==='entreprise'?document.querySelector('#company-siret').value.trim():'',
         phone:document.querySelector('#signup-phone').value.trim(),
         city:document.querySelector('#signup-city').value.trim(),
-        skills:type==='independant'?document.querySelector('#independent-skills').value.trim():'',
+        skills:type==='independant'?(syncSkillPicker('signup-skill-options','independent-skills','independent-skills-other'),document.querySelector('#independent-skills').value.trim()):'',
         description:type==='independant'?document.querySelector('#independent-description').value.trim():'',
         availability:type==='independant'?document.querySelector('#independent-availability').value:'À convenir',
         public_profile:type==='independant'?document.querySelector('#signup-profile-public').checked:false
