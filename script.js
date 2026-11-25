@@ -16,7 +16,7 @@ async function loadPublicProfiles(){
 function renderPublicProfile(data,profileId){
   const card=document.createElement('article');card.className='profile-card profile-card-horizontal';card.dataset.profileId=profileId;
   const skills=data.skills||'Professionnel indépendant';
-  card.dataset.skill=skills;card.dataset.location=data.city||'';card.dataset.availability='';
+  card.dataset.skill=skills;card.dataset.location=[data.city||'',data.postal_code||''].filter(Boolean).join(' ');card.dataset.availability='';
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');card.dataset.avatar=data.avatar_url||'';
   const main=document.createElement('div');main.className='profile-card-main';
   const avatar=document.createElement('div');avatar.className='avatar avatar-1';
@@ -38,9 +38,19 @@ function gridAppend(card){document.querySelector('#profile-results')?.append(car
 
 function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
 const skillSynonyms={
-  soudeur:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
-  soudeuse:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
+  secretaire:['secretaire','secretariat','administratif','administrative','administratifs','administratives','assistante administrative','assistant administratif'],
+  secretariat:['secretaire','secretariat','administratif','administrative','assistante'],
+  comptable:['comptable','comptabilite','compta','comptabilites'],
+  comptabilite:['comptable','comptabilite','compta'],
+  compta:['comptable','comptabilite','compta'],
+  assistant:['assistant','assistante','administratif','administrative','secretariat','secretaire'],
+  assistante:['assistant','assistante','administratif','administrative','secretariat','secretaire'],
+  administratif:['administratif','administrative','administration','secretariat','secretaire','assistant','assistante'],
+  administrative:['administratif','administrative','administration','secretariat','secretaire','assistant','assistante'],
+  soudeur:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses','tig'],
+  soudeuse:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses','tig'],
   soudure:['soudeur','soudeuse','soudure','souder','soudeurs','soudeuses'],
+  tig:['tig','soudure','soudeur','soudeuse'],
   electricien:['electricien','electricienne','electricite','electrique'],
   electricienne:['electricien','electricienne','electricite','electrique'],
   electricite:['electricien','electricienne','electricite','electrique'],
@@ -55,19 +65,23 @@ const skillSynonyms={
   metallier:['metallier','metalliere','metallerie','soudeur','soudeuse','soudure'],
   metalliere:['metallier','metalliere','metallerie','soudeur','soudeuse','soudure']
 };
+function skillTermMatches(term,searchableTokens){
+  const alternatives=skillSynonyms[term]||[term];
+  return alternatives.some(alternative=>{
+    const normalized=normalizeText(alternative);
+    return searchableTokens.some(token=>token===normalized||token.startsWith(normalized)||normalized.startsWith(token));
+  });
+}
 function filterProfiles(){
   const skill=normalizeText(document.querySelector('#skill-filter').value);
   const place=normalizeText(document.querySelector('#location-filter').value);
   const availability=document.querySelector('#availability-filter').value;
-  const terms=skill?skill.split(/\s+/):[];
+  const terms=skill?skill.split(/\s+/).filter(Boolean):[];
   let shown=0;
   document.querySelectorAll('#profile-results .profile-card').forEach(card=>{
-    const searchable=normalizeText(card.dataset.skill+' '+card.textContent);
+    const searchableTokens=normalizeText(card.dataset.skill+' '+card.textContent).split(/\s+/).filter(Boolean);
     const location=normalizeText(card.dataset.location+' '+card.textContent);
-    const matchSkill=terms.every(term=>{
-      const alternatives=skillSynonyms[term]||[term];
-      return alternatives.some(alternative=>searchable.includes(alternative));
-    });
+    const matchSkill=!terms.length||terms.some(term=>skillTermMatches(term,searchableTokens));
     const matchPlace=!place||place.split(/\s+/).every(term=>location.includes(term));
     const matchAvailability=!availability||card.dataset.availability===availability;
     card.hidden=!(matchSkill&&matchPlace&&matchAvailability);
@@ -251,7 +265,7 @@ async function publishPublicProfile(uid){
   if(data.account_type!=='independant')throw new Error('Seuls les indépendants peuvent publier.');
   await setDoc(doc(db,'public_directory',uid),{
     full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',
-    city:data.city||'',avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
+    city:data.city||'',postal_code:data.postal_code||'',avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
   });
 }
 async function refreshPublicProfileSetting(user,data){
