@@ -187,3 +187,8 @@
 .skill-picker-option{display:inline-flex!important;align-items:center;gap:7px;width:50%;margin:5px 0!important;font-size:12px!important;font-weight:500!important;vertical-align:top}
 .skill-picker-option input{width:15px!important;height:15px;margin:0;accent-color:var(--green);flex:0 0 15px}
 @media(max-width:600px){.skill-picker-option{width:100%}}
+
+.skill-search-field{min-width:0;display:flex;flex-direction:column;gap:5px}
+.skill-search-field>.skill-picker{margin:0}
+.skill-search-field>.skill-picker-options{max-height:260px}
+.skill-search-field>.skill-picker input:not([type=checkbox]){width:100%;margin:10px 0 0;padding:10px;border:1px solid #dcd8cf;border-radius:9px;font:inherit}
