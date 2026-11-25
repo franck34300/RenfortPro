@@ -192,3 +192,10 @@
 .skill-search-field>.skill-picker{margin:0}
 .skill-search-field>.skill-picker-options{max-height:260px}
 .skill-search-field>.skill-picker input:not([type=checkbox]){width:100%;margin:10px 0 0;padding:10px;border:1px solid #dcd8cf;border-radius:9px;font:inherit}
+
+
+/* Recherche des profils : ne pas étirer ville et disponibilité à la hauteur du sélecteur */
+#profile-search{align-items:start}
+#profile-search>.skill-search-field,
+#profile-search>#location-filter,
+#profile-search>#availability-filter{align-self:start}
