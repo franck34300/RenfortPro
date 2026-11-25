@@ -67,7 +67,7 @@
           <select id="account-type" required hidden aria-hidden="true" tabindex="-1"><option value="independant">Un indépendant</option><option value="entreprise">Une entreprise</option></select>
           <label for="signup-name" id="signup-contact-label">Nom et prénom</label><input id="signup-name" autocomplete="name" required>
           <div id="independent-fields">
-            <label for="independent-skills">Vos compétences / métiers</label><input id="independent-skills" placeholder="Ex. soudure, électricité, manutention" required>
+            <label for="independent-skills">Vos métiers / compétences</label><input id="independent-skills" placeholder="Sélectionnez un ou plusieurs métiers" readonly required><details class="skill-picker"><summary>Choisir dans la liste <span>Plusieurs choix possibles</span></summary><div class="skill-picker-options" id="signup-skill-options"></div></details><label for="independent-skills-other">Autre métier ou compétence (facultatif)</label><input id="independent-skills-other" placeholder="Ajouter un métier absent de la liste">
             <label for="independent-description">Présentation</label><textarea id="independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
             <label for="independent-experience">Expérience professionnelle (facultatif)</label><input id="independent-experience" placeholder="Ex. 8 ans dans le bâtiment, chantier, atelier…">
             <label for="independent-rate">Tarif indicatif (facultatif)</label><input id="independent-rate" placeholder="Ex. 25 €/h, forfait, à convenir">
@@ -123,7 +123,7 @@
           </section>
           <section class="media-setting" id="independent-profile-editor" hidden>
             <h4>Mon profil professionnel</h4>
-            <label for="edit-independent-skills">Compétences / métiers</label><input id="edit-independent-skills" placeholder="Soudure, électricité, manutention…">
+            <label for="edit-independent-skills">Métiers / compétences</label><input id="edit-independent-skills" placeholder="Sélectionnez un ou plusieurs métiers" readonly><details class="skill-picker"><summary>Modifier mes choix <span>Plusieurs choix possibles</span></summary><div class="skill-picker-options" id="edit-skill-options"></div></details><label for="edit-independent-skills-other">Autre métier ou compétence</label><input id="edit-independent-skills-other" placeholder="Ajouter un métier absent de la liste">
             <label for="edit-independent-description">Présentation</label><textarea id="edit-independent-description" rows="4" placeholder="Présentez votre expérience et vos services"></textarea>
             <label for="edit-independent-experience">Expérience professionnelle</label><input id="edit-independent-experience" placeholder="Ex. 8 ans d’expérience dans…">
             <label for="edit-independent-phone">Téléphone professionnel</label><input id="edit-independent-phone" type="tel" autocomplete="tel" placeholder="06…">
