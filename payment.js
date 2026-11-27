@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAY9foPoP3fEgjXw0bCz0AnbKaC8cuvVaE",
@@ -87,9 +87,6 @@ async function verifyAndDisplay(subscriptionId) {
     paymentMessage("PayPal indique que l'abonnement n'est pas encore actif (" + result.status + ").");
     return false;
   }
-  await setDoc(doc(db, "profiles", auth.currentUser.uid), {
-    paypal_subscription_id: result.subscriptionId
-  }, { merge: true });
   subscriptionActive = true;
   window.__renfortproCompanyAccess = true;
   paymentBox.hidden = true;
