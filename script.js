@@ -474,27 +474,17 @@ async function loadAdminDashboard(user){
         const meta=document.createElement('small');meta.textContent=(item.type==='entreprise'?'Entreprise':'Indépendant')+(item.city?' · '+item.city:'');identity.append(name,meta);
         const date=document.createElement('time');date.textContent=item.date||'';row.append(identity,date);recent.append(row);
       });
-      let subscriptionWarning='';
       try{
         const subscriptionResponse=await fetch('/api/admin/subscriptions',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
         const subscriptionResult=await subscriptionResponse.json();
-        if(!subscriptionResponse.ok)throw new Error(subscriptionResult.error||'Suivi PayPal indisponible.');
+        if(!subscriptionResponse.ok)throw new Error(subscriptionResult.error||'Suivi des entreprises indisponible.');
         const summary=document.querySelector('#admin-subscription-summary');summary.replaceChildren();
-        const summaryItems=[
-          ['Actifs',subscriptionResult.summary?.active||0],
-          ['En attente',subscriptionResult.summary?.pending||0],
-          ['Non abonnées',subscriptionResult.summary?.notSubscribed||0],
-          ['Autres statuts',subscriptionResult.summary?.other||0]
-        ];
-        summaryItems.forEach(([label,count])=>{const chip=document.createElement('span');chip.textContent=label+' : '+count;summary.append(chip);});
+        [['Entreprises inscrites',subscriptionResult.summary?.companies||0],['Entreprises abonnées',subscriptionResult.summary?.subscribed||0]].forEach(([label,count])=>{
+          const chip=document.createElement('span');chip.textContent=label+' : '+count;summary.append(chip);
+        });
         const subscriptionList=document.querySelector('#admin-subscription-list');subscriptionList.replaceChildren();
         const companies=Array.isArray(subscriptionResult.companies)?subscriptionResult.companies:[];
-        if(!companies.length){const empty=document.createElement('p');empty.textContent='Aucune entreprise à afficher.';subscriptionList.append(empty);}
-        const formatDate=value=>{
-          if(!value)return 'Non communiquée';
-          const date=new Date(value);
-          return Number.isNaN(date.getTime())?'Non communiquée':new Intl.DateTimeFormat('fr-FR',{day:'2-digit',month:'long',year:'numeric'}).format(date);
-        };
+        if(!companies.length){const empty=document.createElement('p');empty.textContent='Aucune entreprise inscrite pour le moment.';subscriptionList.append(empty);}
         companies.forEach(company=>{
           const row=document.createElement('div');row.className='admin-subscription-row';
           const identity=document.createElement('div');identity.className='admin-subscription-company';
@@ -502,25 +492,15 @@ async function loadAdminDashboard(user){
           const city=document.createElement('small');city.textContent=company.city||'Ville non renseignée';
           identity.append(name,city);
           const badge=document.createElement('span');badge.className='admin-subscription-status';
-          badge.textContent=company.statusLabel||'Statut inconnu';
-          if(company.status==='ACTIVE')badge.classList.add('is-active');
-          else if(company.status==='APPROVAL_PENDING'||company.status==='APPROVED')badge.classList.add('is-pending');
-          else if(company.status==='CANCELLED'||company.status==='EXPIRED'||company.status==='SUSPENDED')badge.classList.add('is-cancelled');
-          else if(company.status==='UNAVAILABLE')badge.classList.add('is-unavailable');
-          const start=document.createElement('div');start.className='admin-subscription-date';
-          const startLabel=document.createElement('small');startLabel.textContent='Début de l’abonnement';
-          const startValue=document.createElement('strong');startValue.textContent=formatDate(company.startDate);start.append(startLabel,startValue);
-          const renewal=document.createElement('div');renewal.className='admin-subscription-date';
-          const renewalLabel=document.createElement('small');renewalLabel.textContent='Prochain renouvellement';
-          const renewalValue=document.createElement('strong');renewalValue.textContent=formatDate(company.nextBillingDate);renewal.append(renewalLabel,renewalValue);
-          row.append(identity,badge,start,renewal);subscriptionList.append(row);
+          badge.textContent=company.subscribed?'Abonnée':'Non abonnée';
+          if(company.subscribed)badge.classList.add('is-active');
+          row.append(identity,badge);subscriptionList.append(row);
         });
       }catch(subscriptionError){
-        subscriptionWarning=' Suivi PayPal indisponible : '+subscriptionError.message;
-        const summary=document.querySelector('#admin-subscription-summary');summary.textContent='Données PayPal indisponibles.';
+        const summary=document.querySelector('#admin-subscription-summary');summary.textContent='Suivi indisponible.';
         const list=document.querySelector('#admin-subscription-list');list.textContent=subscriptionError.message;
       }
-      status.textContent='Statistiques mises à jour.'+subscriptionWarning;
+      status.textContent='Statistiques mises à jour.';
     }catch(error){
       status.textContent='Impossible de charger les statistiques : '+error.message;
     }finally{refresh.disabled=false;}
