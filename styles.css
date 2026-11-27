@@ -227,3 +227,7 @@
 .admin-subscription-status.is-inactive{background:#f1f2ef;color:#68736b}
 .admin-table-empty{padding:10px 0;color:#7a857c;font-size:12px}
 @media(max-width:520px){.admin-subscription-table{min-width:420px}.admin-subscription-table th,.admin-subscription-table td{padding:10px 9px}}
+
+/* Couleurs explicites des statuts d'abonnement dans le tableau admin */
+.admin-subscription-status.is-active{background:#e5f1e6;color:#256334;border:1px solid #b9d9bf}
+.admin-subscription-status.is-inactive{background:#fbe9e8;color:#a52d2d;border:1px solid #efc1be}
