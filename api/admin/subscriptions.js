@@ -23,14 +23,28 @@ module.exports = async function handler(req, res) {
     companySnapshot.forEach(doc => companyProfiles.set(doc.id, doc.data() || {}));
 
     const companies = [];
+    const knownProfileIds = new Set();
     profilesSnapshot.forEach(doc => {
+      knownProfileIds.add(doc.id);
       const profile = doc.data() || {};
+      // Le type du compte dans profiles fait foi : un indépendant ne doit
+      // jamais être reclassé en entreprise à cause d'un ancien document lié.
+      if (profile.account_type !== "entreprise") return;
       const companyProfile = companyProfiles.get(doc.id) || {};
-      if (profile.account_type !== "entreprise" && !companyProfiles.has(doc.id)) return;
       companies.push({
         name: companyProfile.company_name || profile.company_name || profile.full_name || "Entreprise sans nom",
         city: companyProfile.city || profile.city || "",
         subscribed: Boolean(String(profile.paypal_subscription_id || "").trim())
+      });
+    });
+    // Compatibilité avec les anciens dossiers entreprise sans profil principal.
+    companySnapshot.forEach(doc => {
+      if (knownProfileIds.has(doc.id)) return;
+      const companyProfile = doc.data() || {};
+      companies.push({
+        name: companyProfile.company_name || companyProfile.full_name || "Entreprise sans nom",
+        city: companyProfile.city || "",
+        subscribed: Boolean(String(companyProfile.paypal_subscription_id || "").trim())
       });
     });
     companies.sort((a, b) => a.name.localeCompare(b.name, "fr"));
