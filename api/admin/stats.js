@@ -37,8 +37,9 @@ module.exports = async function handler(req, res) {
     snapshot.forEach((profileDoc) => {
       const data = profileDoc.data() || {};
       const isCompany = data.account_type === "entreprise";
-      const isIndependent = data.account_type === "independant";
-      if (!isCompany && !isIndependent) return;
+      // Compatibilité avec les anciens profils : tout compte non entreprise est un indépendant,
+      // comme dans l'ancien tableau de bord qui affichait déjà les inscriptions existantes.
+      const isIndependent = !isCompany;
       if (isCompany) companies++; else independents++;
       const complete = isCompany
         ? Boolean(String(data.company_name || "").trim() && String(data.full_name || "").trim() && String(data.city || "").trim())
