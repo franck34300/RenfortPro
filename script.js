@@ -484,18 +484,27 @@ async function loadAdminDashboard(user){
         });
         const subscriptionList=document.querySelector('#admin-subscription-list');subscriptionList.replaceChildren();
         const companies=Array.isArray(subscriptionResult.companies)?subscriptionResult.companies:[];
-        if(!companies.length){const empty=document.createElement('p');empty.textContent='Aucune entreprise inscrite pour le moment.';subscriptionList.append(empty);}
-        companies.forEach(company=>{
-          const row=document.createElement('div');row.className='admin-subscription-row';
-          const identity=document.createElement('div');identity.className='admin-subscription-company';
-          const name=document.createElement('strong');name.textContent=company.name||'Entreprise sans nom';
-          const city=document.createElement('small');city.textContent=company.city||'Ville non renseignée';
-          identity.append(name,city);
-          const badge=document.createElement('span');badge.className='admin-subscription-status';
-          badge.textContent=company.subscribed?'Abonnée':'Non abonnée';
-          if(company.subscribed)badge.classList.add('is-active');
-          row.append(identity,badge);subscriptionList.append(row);
-        });
+        if(!companies.length){
+          const empty=document.createElement('p');empty.className='admin-table-empty';
+          empty.textContent='Aucune entreprise inscrite pour le moment.';subscriptionList.append(empty);
+        }else{
+          const wrapper=document.createElement('div');wrapper.className='admin-subscription-table-wrap';
+          const table=document.createElement('table');table.className='admin-subscription-table';
+          const thead=document.createElement('thead');const headerRow=document.createElement('tr');
+          ['Entreprise','Ville','Abonnement'].forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;headerRow.append(th);});
+          thead.append(headerRow);table.append(thead);
+          const tbody=document.createElement('tbody');
+          companies.forEach(company=>{
+            const row=document.createElement('tr');
+            const name=document.createElement('td');name.className='admin-company-name';name.textContent=company.name||'Entreprise sans nom';
+            const city=document.createElement('td');city.textContent=company.city||'Non renseignée';
+            const statusCell=document.createElement('td');const badge=document.createElement('span');
+            badge.className='admin-subscription-status '+(company.subscribed?'is-active':'is-inactive');
+            badge.textContent=company.subscribed?'Abonnée':'Non abonnée';
+            statusCell.append(badge);row.append(name,city,statusCell);tbody.append(row);
+          });
+          table.append(tbody);wrapper.append(table);subscriptionList.append(wrapper);
+        }
       }catch(subscriptionError){
         const summary=document.querySelector('#admin-subscription-summary');summary.textContent='Suivi indisponible.';
         const list=document.querySelector('#admin-subscription-list');list.textContent=subscriptionError.message;
