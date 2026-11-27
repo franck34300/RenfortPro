@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
 
     const result = await db.runTransaction(async (transaction) => {
       const [profileSnap, counterSnap] = await Promise.all([transaction.get(profileRef), transaction.get(counterRef)]);
-      if (!profileSnap.exists || profileSnap.data().account_type !== "independant") {
+      if (!profileSnap.exists || profileSnap.data().account_type === "entreprise") {
         return { founder: false, founderNumber: null, assigned: counterSnap.exists ? Number(counterSnap.data().assigned || 0) : 0 };
       }
       const profile = profileSnap.data() || {};
@@ -33,8 +33,8 @@ module.exports = async function handler(req, res) {
       }
 
       if (!counterSnap.exists) {
-        const querySnap = await transaction.get(db.collection("profiles").where("account_type", "==", "independant"));
-        const candidates = querySnap.docs.slice().sort((a, b) => {
+        const querySnap = await transaction.get(db.collection("profiles"));
+        const candidates = querySnap.docs.filter((candidate) => candidate.data().account_type !== "entreprise").sort((a, b) => {
           const difference = createdAtMillis(a.data().created_at) - createdAtMillis(b.data().created_at);
           return difference || a.id.localeCompare(b.id);
         });
