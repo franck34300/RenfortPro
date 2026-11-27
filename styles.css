@@ -210,3 +210,20 @@
 .admin-founder-progress{height:10px;overflow:hidden;border-radius:999px;background:#edf0e9}
 .admin-founder-progress>span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9a7939,#c4a35f);transition:width .25s ease}
 @media(max-width:520px){.admin-founder-progress-card>div:first-child{align-items:flex-start;flex-direction:column;gap:4px}}
+
+
+/* Suivi des abonnements PayPal dans l'administration */
+.admin-subscription-summary{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.admin-subscription-summary span{padding:6px 9px;border-radius:999px;background:#f1f3ee;color:#526357;font-size:10px;font-weight:700}
+.admin-subscription-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(100px,.8fr) minmax(120px,1fr) minmax(120px,1fr);gap:10px;align-items:center;padding:12px 0;border-top:1px solid #edf0ea}
+.admin-subscription-company{display:grid;gap:3px;min-width:0}
+.admin-subscription-company strong{font-size:11px;color:#34483a;overflow-wrap:anywhere}
+.admin-subscription-company small,.admin-subscription-date small{font-size:10px;color:#7a857c}
+.admin-subscription-date{display:grid;gap:3px}
+.admin-subscription-date strong{font-size:10px;color:#526357;font-weight:600}
+.admin-subscription-status{width:max-content;max-width:100%;padding:5px 8px;border-radius:999px;background:#f0f1ed;color:#5f695f;font-size:10px;font-weight:700}
+.admin-subscription-status.is-active{background:#e5f1e7;color:#32623b}
+.admin-subscription-status.is-pending{background:#fff3dc;color:#8a641c}
+.admin-subscription-status.is-cancelled{background:#f8e9e6;color:#984b40}
+.admin-subscription-status.is-unavailable{background:#eee9f5;color:#65517d}
+@media(max-width:600px){.admin-subscription-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.admin-subscription-row .admin-subscription-date{grid-column:1/-1}.admin-subscription-status{justify-self:end}}
