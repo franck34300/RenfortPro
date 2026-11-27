@@ -32,16 +32,23 @@ function renderPublicProfile(data,profileId){
   if(data.avatar_url){avatar.style.backgroundImage='url('+data.avatar_url+')';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';avatar.textContent='';}
   const info=document.createElement('div');info.className='profile-card-info';
   const name=document.createElement('h3');name.textContent=(data.full_name||'Professionnel indépendant').trim().split(/\s+/)[0];
+  const founderNumber=Number(data.founder_number);
+  if(Number.isInteger(founderNumber)&&founderNumber>=1&&founderNumber<=100){
+    const founderBadge=document.createElement('span');founderBadge.className='founder-badge';
+    founderBadge.textContent='★ Membre fondateur';founderBadge.title='Membre fondateur n°'+founderNumber;
+    info.append(name,founderBadge);
+  }else info.append(name);
   const job=document.createElement('p');job.className='profile-job';job.textContent=skills.split(/[,;|]/)[0].trim();
   const location=document.createElement('span');location.className='location';location.textContent='⌖ '+(data.city||'Localisation non renseignée');
   const tags=document.createElement('div');tags.className='tags profile-card-tags';
   card.dataset.tags=skills.split(/[,;|]/).map(x=>x.trim()).filter(Boolean).slice(0,4).join('|');
   card.dataset.tags.split('|').filter(Boolean).forEach(tag=>{const t=document.createElement('span');t.textContent=tag;tags.append(t);});
-  info.append(name,job,location,tags);main.append(avatar,info);card.append(main);
+  info.append(job,location,tags);main.append(avatar,info);card.append(main);
   const button=document.createElement('button');button.type='button';button.className='button button-outline button-card';button.textContent='Voir le profil →';
   button.addEventListener('click',()=>openProfile(card));card.append(button);
   gridAppend(card);
 }
+
 function gridAppend(card){document.querySelector('#profile-results')?.append(card);}
 
 function normalizeText(value){return (value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
@@ -372,9 +379,12 @@ async function publishPublicProfile(uid){
     full_name:(data.full_name||'').trim().split(/\s+/)[0],skills:data.skills||'',
     city:data.city||'',postal_code:data.postal_code||'',
     latitude:coordinates?.latitude??null,longitude:coordinates?.longitude??null,
-    avatar_url:data.avatar_url||'',updated_at:serverTimestamp()
+    avatar_url:data.avatar_url||'',
+    founder_number:Number.isInteger(Number(data.founder_number))?Number(data.founder_number):null,
+    updated_at:serverTimestamp()
   });
 }
+
 async function refreshPublicProfileSetting(user,data){
   const box=document.querySelector('#public-profile-setting');
   if(!box||data.account_type!=='independant')return;
@@ -435,7 +445,14 @@ async function loadAdminDashboard(user){
       if(!response.ok)throw new Error(result.error||'Statistiques indisponibles.');
       document.querySelector('#admin-independent-count').textContent=Number(result.independents||0).toLocaleString('fr-FR');
       document.querySelector('#admin-company-count').textContent=Number(result.companies||0).toLocaleString('fr-FR');
+      document.querySelector('#admin-complete-count').textContent=Number(result.completeProfiles||0).toLocaleString('fr-FR');
       document.querySelector('#admin-month-count').textContent=Number(result.newThisMonth||0).toLocaleString('fr-FR');
+      const founderCount=Math.min(100,Number(result.founders||0));
+      document.querySelector('#admin-founder-count').textContent=founderCount.toLocaleString('fr-FR')+' / 100';
+      document.querySelector('#admin-founder-remaining').textContent=Number(result.foundersRemaining??(100-founderCount))+' places disponibles';
+      const founderProgress=document.querySelector('#admin-founder-progress');
+      founderProgress.setAttribute('aria-valuenow',String(founderCount));
+      document.querySelector('#admin-founder-progress-bar').style.width=founderCount+'%';
       document.querySelector('#admin-total-count').textContent=Number(result.total||0).toLocaleString('fr-FR')+' comptes au total';
       const chart=document.querySelector('#admin-monthly-chart');chart.replaceChildren();
       const months=Array.isArray(result.months)?result.months:[];
@@ -457,6 +474,41 @@ async function loadAdminDashboard(user){
         const meta=document.createElement('small');meta.textContent=(item.type==='entreprise'?'Entreprise':'Indépendant')+(item.city?' · '+item.city:'');identity.append(name,meta);
         const date=document.createElement('time');date.textContent=item.date||'';row.append(identity,date);recent.append(row);
       });
+      try{
+        const subscriptionResponse=await fetch('/api/admin/subscriptions',{headers:{Authorization:'Bearer '+token},cache:'no-store'});
+        const subscriptionResult=await subscriptionResponse.json();
+        if(!subscriptionResponse.ok)throw new Error(subscriptionResult.error||'Suivi des entreprises indisponible.');
+        const summary=document.querySelector('#admin-subscription-summary');summary.replaceChildren();
+        [['Entreprises inscrites',subscriptionResult.summary?.companies||0],['Entreprises abonnées',subscriptionResult.summary?.subscribed||0]].forEach(([label,count])=>{
+          const chip=document.createElement('span');chip.textContent=label+' : '+count;summary.append(chip);
+        });
+        const subscriptionList=document.querySelector('#admin-subscription-list');subscriptionList.replaceChildren();
+        const companies=Array.isArray(subscriptionResult.companies)?subscriptionResult.companies:[];
+        if(!companies.length){
+          const empty=document.createElement('p');empty.className='admin-table-empty';
+          empty.textContent='Aucune entreprise inscrite pour le moment.';subscriptionList.append(empty);
+        }else{
+          const wrapper=document.createElement('div');wrapper.className='admin-subscription-table-wrap';
+          const table=document.createElement('table');table.className='admin-subscription-table';
+          const thead=document.createElement('thead');const headerRow=document.createElement('tr');
+          ['Entreprise','Ville','Abonnement'].forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;headerRow.append(th);});
+          thead.append(headerRow);table.append(thead);
+          const tbody=document.createElement('tbody');
+          companies.forEach(company=>{
+            const row=document.createElement('tr');
+            const name=document.createElement('td');name.className='admin-company-name';name.textContent=company.name||'Entreprise sans nom';
+            const city=document.createElement('td');city.textContent=company.city||'Non renseignée';
+            const statusCell=document.createElement('td');const badge=document.createElement('span');
+            badge.className='admin-subscription-status '+(company.subscribed?'is-active':'is-inactive');
+            badge.textContent=company.subscribed?'Abonnée':'Non abonnée';
+            statusCell.append(badge);row.append(name,city,statusCell);tbody.append(row);
+          });
+          table.append(tbody);wrapper.append(table);subscriptionList.append(wrapper);
+        }
+      }catch(subscriptionError){
+        const summary=document.querySelector('#admin-subscription-summary');summary.textContent='Suivi indisponible.';
+        const list=document.querySelector('#admin-subscription-list');list.textContent=subscriptionError.message;
+      }
       status.textContent='Statistiques mises à jour.';
     }catch(error){
       status.textContent='Impossible de charger les statistiques : '+error.message;
@@ -597,11 +649,21 @@ async function createProfileForUser(user,metadata){
       created_at:serverTimestamp()
     });
   }
-  if(metadata.account_type==='independant'&&metadata.public_profile){
+  const type=metadata.account_type||'independant';
+  if(type==='independant'){
+    try{
+      const token=await user.getIdToken();
+      const response=await fetch('/api/founders/claim',{method:'POST',headers:{Authorization:'Bearer '+token}});
+      if(!response.ok){
+        const result=await response.json().catch(()=>({}));
+        console.warn('Statut membre fondateur non attribué:',result.error||response.status);
+      }
+    }catch(error){console.warn('Attribution membre fondateur indisponible:',error);}
+  }
+  if(type==='independant'&&metadata.public_profile){
     try{await publishPublicProfile(user.uid);}
     catch(error){console.warn('Fiche publique non publiée:',error);await updateDoc(ref,{public_profile:false});}
   }
-  const type=metadata.account_type||'';
   if(type==='entreprise'){
     const companyRef=doc(db,'company_profiles',user.uid);
     const companySnap=await getDoc(companyRef);
