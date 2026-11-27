@@ -1,15 +1,20 @@
-const { send, getUser, paypalToken } = require("../../lib/paypal");
+const { send, getUser, paypalToken, paypalPlanId } = require("../../lib/paypal");
+const { getAdmin } = require("../../lib/firebase-admin");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") return send(res, 405, { error: "Méthode non autorisée." });
   try {
     const user = await getUser(req);
-    const planId = process.env.PAYPAL_PLAN_ID;
-    if (!planId) return send(res, 500, { error: "Identifiant du forfait PayPal manquant (PAYPAL_PLAN_ID)." });
+    const planId = paypalPlanId();
+    if (!planId) return send(res, 500, { error: "Identifiant du forfait PayPal manquant." });
+
+    const admin = getAdmin();
+    const profileRef = admin.firestore().collection("profiles").doc(user.localId);
+    const profileSnap = await profileRef.get();
+    if (!profileSnap.exists) return send(res, 404, { error: "Profil RenfortPro introuvable." });
 
     const { accessToken, base } = await paypalToken();
 
-    // Vérifie que le forfait configuré correspond bien à 10 EUR par mois.
     const planResponse = await fetch(base + "/v1/billing/plans/" + encodeURIComponent(planId), {
       headers: { Authorization: "Bearer " + accessToken }
     });
@@ -54,8 +59,18 @@ module.exports = async function handler(req, res) {
     if (!response.ok) return send(res, 502, { error: subscription.message || "PayPal n'a pas pu créer l'abonnement." });
     const approval = (subscription.links || []).find(link => link.rel === "approve");
     if (!approval || !subscription.id) return send(res, 502, { error: "Lien de validation PayPal introuvable." });
+
+    // L'identifiant est enregistré dès la création pour que l'administration voie aussi
+    // les paiements commencés mais pas encore validés.
+    await profileRef.set({
+      paypal_subscription_id: subscription.id,
+      paypal_subscription_status: subscription.status || "APPROVAL_PENDING",
+      paypal_subscription_created_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
     return send(res, 200, { subscriptionId: subscription.id, approvalUrl: approval.href });
   } catch (error) {
-    return send(res, 401, { error: error.message || "Impossible de créer l'abonnement." });
+    console.error("Création abonnement PayPal RenfortPro:", error);
+    return send(res, 500, { error: error.message || "Impossible de créer l'abonnement." });
   }
 };
